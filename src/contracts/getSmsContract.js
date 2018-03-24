@@ -1,5 +1,11 @@
 import SmsCertifier from 'dethercontract/contracts/SmsCertifier.json';
 
+/**
+ * Get SMS contract
+ * @param  {object} web3js web3js instance
+ * @param  {string} id     network id
+ * @return {object}        contract abi
+ */
 function getSmsContract(web3js, id) {
   return new Promise(async (res, rej) => {
     try {

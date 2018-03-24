@@ -1,7 +1,10 @@
 /* global window */
 import Web3 from 'web3';
 
-import { getAddress } from './wallet';
+import {
+  getAddress,
+  getBalance,
+} from './wallet';
 
 import {
   getSmsContract,
@@ -9,6 +12,9 @@ import {
   getDetherContract,
 } from './contracts';
 
+/**
+ * DetherWeb3
+ */
 class DetherWeb3 {
   constructor() {
     if (!window || !window.web3) throw new Error('web3 is undefined');
@@ -31,11 +37,12 @@ class DetherWeb3 {
     });
   }
 
+  // Set contract instance
   async loadContract() {
     try {
       // TODO: resolve network problem
-      this.networkId = await this.web3js.eth.net.getId();
-      // this.networkId = '42';
+      // this.networkId = await this.web3js.eth.net.getId();
+      this.networkId = '42';
       this.getSmsContract = await getSmsContract(this.web3js, this.networkId);
       this.getDthContract = await getDthContract(this.web3js, this.networkId);
       this.getDetherContract = await getDetherContract(this.web3js, this.networkId);
@@ -45,6 +52,7 @@ class DetherWeb3 {
     }
   }
 
+  // Getters
   get network() {
     return this.networkId;
   }
@@ -54,26 +62,6 @@ class DetherWeb3 {
   }
 }
 
-DetherWeb3.prototype.getBalance = async function getBalance() {
-  return new Promise(async (res, rej) => {
-    try {
-      this.web3js.eth.getBalance(this.address).then(async (result, error) => {
-        if (!error) {
-          res({
-            eth: parseFloat(this.web3js.utils.fromWei(result, 'ether')),
-            // TODO: error test
-            dth: parseFloat(this.web3js.utils.fromWei(
-              await this.getDthContract
-              .methods.balanceOf('0805fDe3043251af5F86dE007f008d2F5CF8D2bB').call(),
-              'ether',
-            )),
-          });
-        } else {
-          rej(new TypeError(`Invalid shop profile: ${error.message}`));
-        }
-      });
-    } catch (e) {
-      rej(e);
-    }
-  });
-};
+DetherWeb3.prototype.getBalance = getBalance;
+
+export default DetherWeb3;

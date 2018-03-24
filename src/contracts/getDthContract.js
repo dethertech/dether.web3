@@ -1,5 +1,11 @@
 import DthContract from 'dethercontract/contracts/DetherToken.json';
 
+/**
+ * Get DTH contract
+ * @param  {object} web3js web3js instance
+ * @param  {string} id     network id
+ * @return {object}        contract abi
+ */
 function getDthContract(web3js, id) {
   return new Promise(async (res, rej) => {
     try {
