@@ -3,8 +3,8 @@
  * @author Dether TEAM
  */
 
- import 'babel-polyfill';
+import 'babel-polyfill';
 
- import DetherWeb3 from './detherweb3';
+import DetherWeb3 from './detherweb3';
 
- module.exports = DetherWeb3;
+module.exports = DetherWeb3;
