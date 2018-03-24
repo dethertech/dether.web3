@@ -6,7 +6,7 @@
   "scripts": {
     "babel-node": "babel-node --presets=latest",
     "example": "npm run babel-node -- examples/usage.js",
-    "test": "nyc --reporter=html mocha --require babel-core/register test/test.config.js test/**/*.test.js --timeout 15000",
+    "test": "nyc --reporter=html mocha --require babel-core/register test/test.config.js test/**/*.test.js test/specs/**/*.test.js --timeout 15000",
     "prepublish": "babel src --out-dir lib",
     "build": "babel src --out-dir lib",
     "esdoc": "./node_modules/.bin/esdoc",
