@@ -1,21 +1,30 @@
+import { shopFromContract } from '../utils';
+
+/**
+ * Get get from smart contract
+ * @return {object} shop informations
+ */
 function getShop() {
   return new Promise(async (res, rej) => {
     try {
+      if (!this.detherContract || !this.detherContract._address) {
+        return rej(new Error('Invalid Dether contract address'));
+      }
+
+      if (!this.address) rej(new Error('Invalid ethereum address'));
+
       const rawShop = await this.detherContract
         .methods
         .getShop(this.address)
         .call();
 
-      let id = this.web3js.utils.hexToUtf8(rawShop[2]).replace(/\0/g, '');
-      console.log('id -> ', id);
-      id = id.replace(/\0/g, '');
-      console.log('new id -> ', id)
+      const id = this.web3js.utils.hexToUtf8(rawShop[2]).replace(/\0/g, '');
 
       if (!id) return res(null);
 
       return res(Object.assign(
         {},
-        shopFromContract(rawShop),
+        await shopFromContract(rawShop, this.web3js),
         {
           ethAddress: this.address,
         },

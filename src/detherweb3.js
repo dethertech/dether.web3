@@ -3,12 +3,13 @@ import Web3 from 'web3';
 
 import { isSmsReg } from './sms';
 
+import { getTransactionStatus } from './transactions';
+
 import {
   getZonePrice,
   isZoneOpen,
+  getShop,
 } from './shop';
-
-import { getTransactionStatus } from './transactions';
 
 import {
   getAddress,
@@ -106,5 +107,7 @@ DetherWeb3.prototype.getZonePrice = getZonePrice;
 DetherWeb3.prototype.getTransactionStatus = getTransactionStatus;
 
 DetherWeb3.prototype.isZoneOpen = isZoneOpen;
+
+DetherWeb3.prototype.getShop = getShop;
 
 export default DetherWeb3;

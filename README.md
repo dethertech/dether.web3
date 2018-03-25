@@ -96,6 +96,21 @@ try {
 }
 ```
 
+#### Get shop
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const shop = await detherWeb3.getShop();
+
+  console.log(shop);
+} catch (e) {
+  throw new Error(e);
+}
+```
+
 ### Getters
 
 #### Get ethereum address
