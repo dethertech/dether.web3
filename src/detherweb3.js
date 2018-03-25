@@ -40,13 +40,14 @@ class DetherWeb3 {
   // Set contract instance
   async loadContract() {
     try {
+      this.address = await getAddress(this.web3js) || null;
       // TODO: resolve network problem
       // this.networkId = await this.web3js.eth.net.getId();
       this.networkId = '42';
+      // TODO: not working on mainnet, invalid address ?
       this.getSmsContract = await getSmsContract(this.web3js, this.networkId);
       this.getDthContract = await getDthContract(this.web3js, this.networkId);
       this.getDetherContract = await getDetherContract(this.web3js, this.networkId);
-      this.address = await getAddress(this.web3js);
     } catch (e) {
       throw new Error(e);
     }
@@ -59,6 +60,14 @@ class DetherWeb3 {
 
   get ethAddress() {
     return this.address;
+  }
+
+  get isWeb3() {
+    return this.provider !== null;
+  }
+
+  get isConnected() {
+    return this.address !== null;
   }
 }
 

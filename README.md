@@ -2,7 +2,7 @@
 
 ## Usage
 
-### Instanciate
+#### Instanciate
 ```js
 import DetherWeb3 from 'detherweb3';
 
@@ -13,7 +13,9 @@ try {
 }
 ```
 
-### Get Balance
+### Methods
+
+#### Get Balance
 ```js
 import DetherWeb3 from 'detherweb3';
 
@@ -28,32 +30,25 @@ try {
 }
 ```
 
-### Get ethereum address
+
+### Getters
+
+#### Get ethereum address
 ```js
-import DetherWeb3 from 'detherweb3';
-
-try {
-  const detherWeb3 = await new DetherWeb3();
-
-  const address = await detherWeb3.ethAddress;
-
-  console.log(address);
-} catch (e) {
-  throw new Error(e);
-}
+const address = await detherWeb3.ethAddress;
 ```
 
 ### Get network id
 ```js
-import DetherWeb3 from 'detherweb3';
+const networkId = await detherWeb3.network;
+```
 
-try {
-  const detherWeb3 = await new DetherWeb3();
+### Is web3
+```js
+const isWeb3 = await detherWeb3.isWeb3;
+```
 
-  const networkId = await detherWeb3.network;
-
-  console.log(networkId);
-} catch (e) {
-  throw new Error(e);
-}
+### Is connected
+```js
+const isConnected = await detherWeb3.isConnected;
 ```

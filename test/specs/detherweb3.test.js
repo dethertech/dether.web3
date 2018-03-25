@@ -43,5 +43,28 @@ describe('dether web3', () => {
         expect(e).to.equal(null);
       }
     });
+
+
+// Getters
+     it('should call all getters', async () => {
+      try {
+        detherWeb3 = await new DetherWeb3();
+
+        const address = await detherWeb3.ethAddress;
+        /* eslint-disable-next-line */
+        expect(/^0x[a-fA-F0-9]{40}$/.test(address)).to.be.true;
+
+        const networkId = await detherWeb3.network;
+        expect(networkId).to.equal('42');
+
+        const isWeb3 = await detherWeb3.isWeb3;
+        expect(isWeb3).to.equal(true);
+
+        const isConnected = await detherWeb3.isConnected;
+        expect(isConnected).to.equal(true);
+      } catch (e) {
+        expect(e).to.equal(null);
+      }
+    });
   });
 });
