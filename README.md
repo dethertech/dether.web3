@@ -30,6 +30,71 @@ try {
 }
 ```
 
+#### Is sms registered
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const isSmsReg = await detherWeb3.isSmsReg();
+
+  console.log(isSmsReg);
+} catch (e) {
+  throw new Error(e);
+}
+```
+
+#### Get zone price
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const zoneId = 'GI'
+
+  const zonePrice = await detherWeb3.getZonePrice(zoneId);
+
+  console.log(zonePrice);
+} catch (e) {
+  throw new Error(e);
+}
+```
+
+#### Get transaction status
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const hash = '' // ethereum transaction hash
+
+  const transactionStatus = await detherWeb3.getTransactionStatus(hash);
+
+  console.log(transactionStatus);
+} catch (e) {
+  throw new Error(e);
+}
+```
+
+#### Get transaction status
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const zoneId = 'GI'
+
+  const open = await detherWeb3.isZoneOpen(zoneId);
+
+  console.log(open);
+} catch (e) {
+  throw new Error(e);
+}
+```
 
 ### Getters
 
