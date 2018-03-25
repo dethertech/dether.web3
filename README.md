@@ -111,6 +111,21 @@ try {
 }
 ```
 
+#### Delete shop
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const hash = await detherWeb3.deleteShop();
+
+  console.log(hash);
+} catch (e) {
+  throw new Error(e);
+}
+```
+
 ### Getters
 
 #### Get ethereum address

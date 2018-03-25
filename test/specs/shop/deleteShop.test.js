@@ -3,15 +3,16 @@ import { expect } from 'chai';
 
 import DetherWeb3 from '../../../src';
 
-describe('dether web3 getBalance', () => {
+describe('dether web3 delete shop', () => {
   let detherWeb3;
-  it('should get eth and dth balance', async () => {
+
+  it('should delete shop', async () => {
     try {
       detherWeb3 = await new DetherWeb3();
-      const balance = await detherWeb3.getBalance();
-      expect(balance.eth > 0).to.equal(true);
+      // TODO: not working invalid ABI
+      const shop = await detherWeb3.deleteShop();
+      expect(shop.blockNumber).to.equal(1);
     } catch (e) {
-      console.log(e)
       expect(e).to.equal(null);
     }
   });
