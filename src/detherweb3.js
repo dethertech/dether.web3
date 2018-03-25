@@ -5,6 +5,8 @@ import { isSmsReg } from './sms';
 
 import { getZonePrice } from './shop';
 
+import { getTransactionStatus } from './transactions';
+
 import {
   getAddress,
   getBalance,
@@ -97,5 +99,7 @@ DetherWeb3.prototype.getBalance = getBalance;
 DetherWeb3.prototype.isSmsReg = isSmsReg;
 
 DetherWeb3.prototype.getZonePrice = getZonePrice;
+
+DetherWeb3.prototype.getTransactionStatus = getTransactionStatus;
 
 export default DetherWeb3;
