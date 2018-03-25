@@ -1,6 +1,8 @@
 /* global window */
 import Web3 from 'web3';
 
+import { isSmsReg } from './sms';
+
 import {
   getAddress,
   getBalance,
@@ -45,32 +47,51 @@ class DetherWeb3 {
       // this.networkId = await this.web3js.eth.net.getId();
       this.networkId = '42';
       // TODO: not working on mainnet, invalid address ?
-      this.getSmsContract = await getSmsContract(this.web3js, this.networkId);
-      this.getDthContract = await getDthContract(this.web3js, this.networkId);
-      this.getDetherContract = await getDetherContract(this.web3js, this.networkId);
+      this.smsContract = await getSmsContract(this.web3js, this.networkId);
+      this.dthContract = await getDthContract(this.web3js, this.networkId);
+      this.detherContract = await getDetherContract(this.web3js, this.networkId);
     } catch (e) {
       throw new Error(e);
     }
   }
 
   // Getters
+
+  /**
+   * Network Id
+   * @return {string} return the network Id
+   */
   get network() {
     return this.networkId;
   }
 
+  /**
+   * ethereum address
+   * @return {string} return the user ethereum address
+   */
   get ethAddress() {
     return this.address;
   }
 
+  /**
+   * Is Web3 on browser
+   * @return {Boolean} returns a boolean if metamask is installed on user browser
+   */
   get isWeb3() {
     return this.provider !== null;
   }
 
+  /**
+   * Is connected
+   * @return {Boolean} returns a boolean if the user is connected to metamask
+   */
   get isConnected() {
     return this.address !== null;
   }
 }
 
 DetherWeb3.prototype.getBalance = getBalance;
+
+DetherWeb3.prototype.isSmsReg = isSmsReg;
 
 export default DetherWeb3;

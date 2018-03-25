@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-expressions */
 /* global describe it */
 import { expect } from 'chai';
 // import sinon from 'sinon';
@@ -45,13 +46,26 @@ describe('dether web3', () => {
     });
 
 
+    it('should instancite with loadContract', async () => {
+      try {
+        detherWeb3 = await new DetherWeb3();
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.address)).to.be.true;
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.smsContract._address)).to.be.true;
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.dthContract._address)).to.be.true;
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.detherContract._address)).to.be.true;
+        expect(detherWeb3.networkId).to.equal('42');
+        expect(detherWeb3).to.not.equal(null);
+      } catch (e) {
+        expect(e).to.equal(null);
+      }
+    });
+
 // Getters
      it('should call all getters', async () => {
       try {
         detherWeb3 = await new DetherWeb3();
 
         const address = await detherWeb3.ethAddress;
-        /* eslint-disable-next-line */
         expect(/^0x[a-fA-F0-9]{40}$/.test(address)).to.be.true;
 
         const networkId = await detherWeb3.network;
