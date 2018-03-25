@@ -16,7 +16,7 @@ function getTransactionStatus(hash) {
       else if (transaction.status === '0x1') res('success');
       return res('error');
     } catch (e) {
-      return rej(e);
+      return rej(new Error(e));
     }
   });
 }
