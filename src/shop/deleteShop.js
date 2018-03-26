@@ -9,7 +9,7 @@ function deleteShop() {
           return rej(new Error('Invalid Dether contract address'));
         }
 
-        if (!this.address) rej(new Error('Invalid ethereum address'));
+        if (!this.address) return rej(new Error('Invalid ethereum address'));
 
         const tsx = await this.detherContract
           .methods

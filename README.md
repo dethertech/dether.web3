@@ -79,7 +79,7 @@ try {
 }
 ```
 
-#### Get transaction status
+#### Is zone open
 ```js
 import DetherWeb3 from 'detherweb3';
 
@@ -119,6 +119,32 @@ try {
   const detherWeb3 = await new DetherWeb3();
 
   const hash = await detherWeb3.deleteShop();
+
+  console.log(hash);
+} catch (e) {
+  console.log(e)
+}
+```
+
+#### Add shop
+```js
+import DetherWeb3 from 'detherweb3';
+
+try {
+  const detherWeb3 = await new DetherWeb3();
+
+  const data = {
+    lat: 1.23,
+    lng: 12.324,
+    countryId: 'GI',
+    postalCode: '34584',
+    cat: 'catch',
+    name: 'name',
+    description: 'desc',
+    opening: '0000000',
+  };
+
+  const hash = await detherWeb3.addShop(data);
 
   console.log(hash);
 } catch (e) {

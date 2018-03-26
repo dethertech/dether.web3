@@ -11,7 +11,7 @@ function getShop() {
         return rej(new Error('Invalid Dether contract address'));
       }
 
-      if (!this.address) rej(new Error('Invalid ethereum address'));
+      if (!this.address) return rej(new Error('Invalid ethereum address'));
 
       const rawShop = await this.detherContract
         .methods

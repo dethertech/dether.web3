@@ -10,6 +10,7 @@ import {
   isZoneOpen,
   getShop,
   deleteShop,
+  addShop,
 } from './shop';
 
 import {
@@ -112,5 +113,7 @@ DetherWeb3.prototype.isZoneOpen = isZoneOpen;
 DetherWeb3.prototype.getShop = getShop;
 
 DetherWeb3.prototype.deleteShop = deleteShop;
+
+DetherWeb3.prototype.addShop = addShop;
 
 export default DetherWeb3;
