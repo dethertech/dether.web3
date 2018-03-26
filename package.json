@@ -1,0 +1,56 @@
+{
+  "name": "@dether/detherweb3",
+  "version": "0.1.0",
+  "description": "Dether SDK to easily call smart contract with web3js",
+  "main": "lib/index.js",
+  "scripts": {
+    "babel-node": "babel-node",
+    "example": "npm run babel-node -- examples/usage.js",
+    "test": "mocha --require babel-core/register test/test.config.js test/**/*.test.js test/specs/**/*.test.js --timeout 15000",
+    "prepublish": "babel src --out-dir lib",
+    "build": "babel src --out-dir lib",
+    "esdoc": "./node_modules/.bin/esdoc",
+    "publish:esdoc": "gh-pages -d esdoc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dethertech/dether.web3.git"
+  },
+  "keywords": [
+    "Dether",
+    "ethereum",
+    "sdk",
+    "web3",
+    "metamask"
+  ],
+  "author": "Dether Team <hello@dether.io>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dethertech/dether.web3/issues"
+  },
+  "homepage": "https://github.com/dethertech/dether.web3#readme",
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.2",
+    "babel-preset-env": "^1.6.1",
+    "babel-preset-stage-1": "^6.24.1",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7.1.1",
+    "chaithereum": "https://github.com/SafeMarket/chaithereum.git",
+    "esdoc": "^1.0.4",
+    "esdoc-standard-plugin": "^1.0.0",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0",
+    "gh-pages": "^1.1.0",
+    "mocha": "^5.0.5",
+    "sinon": "^4.4.8"
+  },
+  "dependencies": {
+    "babel-polyfill": "^6.26.0",
+    "dethercontract": "^2.2.2",
+    "web3": "^1.0.0-beta.33",
+    "web3-eth-abi": "^1.0.0-beta.33"
+  }
+}
