@@ -9,7 +9,7 @@ import DetherWeb3 from 'detherweb3';
 try {
   const detherWeb3 = await new DetherWeb3();
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -26,7 +26,7 @@ try {
 
   console.log(balances);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -41,7 +41,7 @@ try {
 
   console.log(isSmsReg);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -58,7 +58,7 @@ try {
 
   console.log(zonePrice);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -75,7 +75,7 @@ try {
 
   console.log(transactionStatus);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -92,7 +92,7 @@ try {
 
   console.log(open);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -107,7 +107,7 @@ try {
 
   console.log(shop);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
@@ -122,7 +122,7 @@ try {
 
   console.log(hash);
 } catch (e) {
-  throw new Error(e);
+  console.log(e)
 }
 ```
 
