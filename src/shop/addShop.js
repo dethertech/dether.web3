@@ -1,3 +1,4 @@
+import DthContract from 'dethercontract/contracts/DetherToken.json';
 import DetherCore from 'dethercontract/contracts/DetherCore.json';
 import web3Abi from 'web3-eth-abi';
 
@@ -30,7 +31,7 @@ function addShop(shop) {
       return res(await this.web3js.eth
         .sendTransaction({
           from: this.address,
-          to: this.dthContract.networks[this.networkId].address,
+          to: DthContract.networks[this.networkId].address,
           data: transferMethodTransactionData,
           value: 0,
           gas: 400000,

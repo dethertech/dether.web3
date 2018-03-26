@@ -22,7 +22,7 @@ describe('dether web3 add shop', () => {
 
       // TODO: not working invalid ABI
       const shop = await detherWeb3.addShop(data);
-      expect(shop).to.equal(1);
+      expect(shop.blockNumber !== 0).to.equal(true);
     } catch (e) {
       expect(e).to.equal(null);
     }

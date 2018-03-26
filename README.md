@@ -156,20 +156,27 @@ try {
 
 #### Get ethereum address
 ```js
-const address = await detherWeb3.ethAddress;
+const address = detherWeb3.ethAddress;
 ```
 
 ### Get network id
 ```js
-const networkId = await detherWeb3.network;
+const networkId = detherWeb3.network;
 ```
 
 ### Is web3
 ```js
-const isWeb3 = await detherWeb3.isWeb3;
+const isWeb3 = detherWeb3.isWeb3;
 ```
 
 ### Is connected
 ```js
-const isConnected = await detherWeb3.isConnected;
+const isConnected = detherWeb3.isConnected;
 ```
+
+
+## TODO
+
+* Add more test
+* Add tellers feature
+* Add DTH transfer feature

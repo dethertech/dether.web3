@@ -11,7 +11,7 @@ describe('dether web3 delete shop', () => {
       detherWeb3 = await new DetherWeb3();
       // TODO: not working invalid ABI
       const shop = await detherWeb3.deleteShop();
-      expect(shop.blockNumber).to.equal(1);
+      expect(shop.blockNumber !== 0).to.equal(true);
     } catch (e) {
       expect(e).to.equal(null);
     }
