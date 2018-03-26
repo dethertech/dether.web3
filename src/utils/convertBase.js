@@ -1,3 +1,6 @@
+/**
+ * Convert Base
+ */
 class ConvertBase {
     convert = (baseFrom, baseTo) => num => parseInt(num, baseFrom).toString(baseTo);
     // binary to decimal

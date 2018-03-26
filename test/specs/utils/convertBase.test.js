@@ -1,7 +1,7 @@
 /* global describe it */
 import { expect } from 'chai';
 
-import ConvertBase from '../../../src/utils/convertBase';
+import { ConvertBase } from '../../../src/utils';
 
 describe('dether web3 ConvertBase', () => {
   it('should res Convert Base', async () => {
