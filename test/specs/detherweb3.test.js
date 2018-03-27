@@ -14,7 +14,8 @@ describe('dether web3', () => {
 
     it('should throw a web3 error', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        detherWeb3 = new DetherWeb3();
+        await detherWeb3.init();
       } catch (e) {
         expect(e).to.not.equal(null);
       }
@@ -26,7 +27,8 @@ describe('dether web3', () => {
 
     it('should throw a provider error', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        detherWeb3 = new DetherWeb3();
+        await detherWeb3.init();
       } catch (e) {
         expect(e).to.not.equal(null);
       }
@@ -38,17 +40,18 @@ describe('dether web3', () => {
 
     it('should instancite web3js', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        detherWeb3 = new DetherWeb3();
+        await detherWeb3.init();
         expect(detherWeb3).to.not.equal(null);
       } catch (e) {
         expect(e).to.equal(null);
       }
     });
 
-
     it('should instancite with loadContract', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        detherWeb3 = new DetherWeb3();
+        await detherWeb3.init();
         expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.address)).to.be.true;
         expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.smsContract._address)).to.be.true;
         expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.dthContract._address)).to.be.true;
@@ -63,7 +66,8 @@ describe('dether web3', () => {
 // Getters
      it('should call all getters', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        detherWeb3 = new DetherWeb3();
+        await detherWeb3.init();
 
         const address = await detherWeb3.ethAddress;
         expect(/^0x[a-fA-F0-9]{40}$/.test(address)).to.be.true;

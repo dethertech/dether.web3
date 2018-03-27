@@ -5,7 +5,8 @@ import DetherWeb3 from 'detherWeb3';
 const getInfo = async () => {
   try {
     console.log('Instantiate DetherWeb3');
-    const detherWeb3 = await new DetherWeb3();
+    const detherWeb3 = new DetherWeb3();
+    await detherWeb3.init();
 
     console.log('Getters:');
     const address = detherWeb3.ethAddress;

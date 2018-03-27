@@ -7,7 +7,8 @@
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 } catch (e) {
   console.log(e)
 }
@@ -20,7 +21,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const balances = await detherWeb3.getBalance();
 
@@ -35,7 +37,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const isSmsReg = await detherWeb3.isSmsReg();
 
@@ -50,7 +53,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const zoneId = 'GI'
 
@@ -67,7 +71,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const hash = '' // ethereum transaction hash
 
@@ -84,7 +89,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const zoneId = 'GI'
 
@@ -101,7 +107,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const shop = await detherWeb3.getShop();
 
@@ -116,7 +123,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const hash = await detherWeb3.deleteShop();
 
@@ -131,7 +139,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const data = {
     lat: 1.23,

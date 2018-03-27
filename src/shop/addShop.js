@@ -4,7 +4,7 @@ import web3Abi from 'web3-eth-abi';
 
 import { overloadedTransferAbi } from '../constants';
 import { shopToContract } from '../utils';
-import { getZonePrice } from './getZonePrice';
+// import { getZonePrice } from './getZonePrice';
 
 /**
  * Add shop on the smart contract
@@ -19,7 +19,7 @@ function addShop(shop) {
 
       if (!this.address) return rej(new Error('Invalid ethereum address'));
 
-      const licencePrice = await getZonePrice(shop.countryId);
+      const licencePrice = await this.getZonePrice(shop.countryId);
 
       if (!licencePrice) return rej(new Error('Invalid country ID'));
 

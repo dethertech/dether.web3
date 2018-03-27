@@ -26,7 +26,8 @@ describe('dether web3 validateShop', () => {
         opening: '0x714b714b3030714b714b300000000000',
       };
 
-      const detherWeb3 = await new DetherWeb3();
+      const detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       const newShop = await shopFromContract(data, detherWeb3.web3js);
 

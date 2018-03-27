@@ -8,7 +8,8 @@ describe('dether web3 get shop', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.getShop();
     } catch (e) {
@@ -18,7 +19,8 @@ describe('dether web3 get shop', () => {
 
   it('should get the shop', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       // TODO: not working invalid ABI
       const shop = await detherWeb3.getShop();
       expect(shop).to.equal(null);

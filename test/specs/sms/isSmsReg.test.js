@@ -7,7 +7,8 @@ describe('dether web3 isSmsReg', () => {
   let detherWeb3;
   it('should get true if user registered', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       // TODO: not working invalid ABI
       const isSms = await detherWeb3.isSmsReg();
       expect(isSms).to.equal(false);
