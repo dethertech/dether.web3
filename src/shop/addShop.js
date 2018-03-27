@@ -28,7 +28,7 @@ function addShop(shop) {
         overloadedTransferAbi,
         [
           DetherCore.networks[this.networkId].address,
-          licencePrice,
+          this.web3js.utils.toWei(licencePrice),
           hexShop,
         ],
       );
