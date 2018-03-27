@@ -8,7 +8,8 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.isZoneOpen();
     } catch (e) {
@@ -18,7 +19,8 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.isZoneOpen('erg');
     } catch (e) {
@@ -28,7 +30,8 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.isZoneOpen('11');
     } catch (e) {
@@ -38,7 +41,8 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.isZoneOpen('as');
     } catch (e) {
@@ -48,7 +52,8 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.isZoneOpen('aE');
     } catch (e) {
@@ -58,7 +63,8 @@ describe('dether web3 is zone open', () => {
 
   it('should return true if FR is open', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       // TODO: not working invalid ABI
       const isSms = await detherWeb3.isZoneOpen('FR');
       expect(isSms).to.equal(true);

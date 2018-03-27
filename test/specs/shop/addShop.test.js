@@ -8,7 +8,8 @@ describe('dether web3 add shop', () => {
 
   it('should add shop', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       const data = {
         lat: 1.23,
         lng: 12.324,

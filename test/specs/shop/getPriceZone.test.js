@@ -8,7 +8,8 @@ describe('dether web3 get Price Zone', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.getZonePrice();
     } catch (e) {
@@ -18,7 +19,8 @@ describe('dether web3 get Price Zone', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.getZonePrice('erg');
     } catch (e) {
@@ -28,7 +30,8 @@ describe('dether web3 get Price Zone', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.getZonePrice('11');
     } catch (e) {
@@ -38,7 +41,8 @@ describe('dether web3 get Price Zone', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.getZonePrice('as');
     } catch (e) {
@@ -48,7 +52,8 @@ describe('dether web3 get Price Zone', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
 
       await detherWeb3.getZonePrice('aE');
     } catch (e) {
@@ -58,7 +63,8 @@ describe('dether web3 get Price Zone', () => {
 
   it('should get the price zone', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       // TODO: not working invalid ABI
       const isSms = await detherWeb3.getZonePrice('FR');
       expect(isSms).to.equal(false);

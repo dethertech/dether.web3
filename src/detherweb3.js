@@ -2,8 +2,10 @@
 import Web3 from 'web3';
 
 import { isSmsReg } from './sms';
-
 import { getTransactionStatus } from './transactions';
+import { getBalance } from './wallet';
+import init from './init';
+
 
 import {
   getZonePrice,
@@ -12,17 +14,6 @@ import {
   deleteShop,
   addShop,
 } from './shop';
-
-import {
-  getAddress,
-  getBalance,
-} from './wallet';
-
-import {
-  getSmsContract,
-  getDthContract,
-  getDetherContract,
-} from './contracts';
 
 /**
  * DetherWeb3
@@ -39,26 +30,7 @@ class DetherWeb3 {
 
     if (typeof this.web3js === 'undefined') throw new Error('Invalid web3js instance');
 
-    this.init = false;
-  }
-
-  // Set contract instance
-  async init() {
-    try {
-      this.address = await getAddress(this.web3js) || null;
-
-      // TODO: resolve network problem
-      this.networkId = await this.web3js.eth.net.getId();
-
-      // TODO: not working on mainnet, invalid address ?
-      this.smsContract = await getSmsContract(this.web3js, this.networkId);
-      this.dthContract = await getDthContract(this.web3js, this.networkId);
-      this.detherContract = await getDetherContract(this.web3js, this.networkId);
-
-      this.init = true;
-    } catch (e) {
-      throw new Error(e);
-    }
+    this.classInit = false;
   }
 
   // Getters
@@ -100,9 +72,11 @@ class DetherWeb3 {
    * @return {Boolean} returns a boolean if the class are initialized
    */
   get isInit() {
-    return this.init;
+    return this.classInit;
   }
 }
+
+DetherWeb3.prototype.init = init;
 
 DetherWeb3.prototype.getBalance = getBalance;
 

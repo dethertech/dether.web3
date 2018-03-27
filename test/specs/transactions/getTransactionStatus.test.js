@@ -8,7 +8,8 @@ describe('dether web3 getTransactionStatus', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       await detherWeb3.getTransactionStatus();
     } catch (e) {
       expect(e).to.not.equal(null);
@@ -17,7 +18,8 @@ describe('dether web3 getTransactionStatus', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       await detherWeb3.getTransactionStatus('ergerh');
     } catch (e) {
       expect(e).to.not.equal(null);
@@ -26,7 +28,8 @@ describe('dether web3 getTransactionStatus', () => {
 
   it('should get transaction status', async () => {
     try {
-      detherWeb3 = await new DetherWeb3();
+      detherWeb3 = new DetherWeb3();
+      await detherWeb3.init();
       const status = await detherWeb3.getTransactionStatus('0xa285341cb6b086eaea1bbd7cb3b25b4d31756b4c6bbf1028a4ee26262128cfd9');
       expect(status).to.equal('pending');
     } catch (e) {
