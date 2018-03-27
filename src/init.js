@@ -21,7 +21,7 @@ function init() {
       this.dthContract = await getDthContract(this.web3js, this.networkId);
       this.detherContract = await getDetherContract(this.web3js, this.networkId);
 
-      this.init = true;
+      this.classInit = true;
       res();
     } catch (e) {
       rej(new Error(e));
