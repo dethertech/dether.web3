@@ -1,6 +1,6 @@
 {
   "name": "@dether.io/detherweb3",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Dether SDK to easily call smart contract with web3js",
   "main": "lib/index.js",
   "scripts": {
