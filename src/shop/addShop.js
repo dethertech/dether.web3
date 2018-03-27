@@ -4,6 +4,7 @@ import web3Abi from 'web3-eth-abi';
 
 import { overloadedTransferAbi } from '../constants';
 import { shopToContract } from '../utils';
+import { getZonePrice } from './getZonePrice';
 
 /**
  * Add shop on the smart contract
@@ -18,12 +19,16 @@ function addShop(shop) {
 
       if (!this.address) return rej(new Error('Invalid ethereum address'));
 
+      const licencePrice = await getZonePrice(shop.countryId);
+
+      if (!licencePrice) return rej(new Error('Invalid country ID'));
+
       const hexShop = shopToContract(shop);
       const transferMethodTransactionData = web3Abi.encodeFunctionCall(
         overloadedTransferAbi,
         [
           DetherCore.networks[this.networkId].address,
-          100,
+          licencePrice,
           hexShop,
         ],
       );
