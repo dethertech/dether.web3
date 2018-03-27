@@ -94,6 +94,14 @@ class DetherWeb3 {
   get isConnected() {
     return this.address !== null;
   }
+
+  /**
+   * Is init
+   * @return {Boolean} returns a boolean if the class are initialized
+   */
+  get isInit() {
+    return this.init;
+  }
 }
 
 DetherWeb3.prototype.getBalance = getBalance;

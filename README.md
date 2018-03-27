@@ -174,6 +174,10 @@ const isWeb3 = detherWeb3.isWeb3;
 const isConnected = detherWeb3.isConnected;
 ```
 
+### Is initialized
+```js
+const isInit = detherWeb3.isInit;
+```
 
 ## TODO
 
