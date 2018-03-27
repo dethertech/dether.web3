@@ -39,27 +39,23 @@ class DetherWeb3 {
 
     if (typeof this.web3js === 'undefined') throw new Error('Invalid web3js instance');
 
-    return new Promise(async (res, rej) => {
-      try {
-        await this.loadContract();
-        res(this);
-      } catch (e) {
-        rej(e);
-      }
-    });
+    this.init = false;
   }
 
   // Set contract instance
-  async loadContract() {
+  async init() {
     try {
       this.address = await getAddress(this.web3js) || null;
+
       // TODO: resolve network problem
-      // this.networkId = await this.web3js.eth.net.getId();
-      this.networkId = '42';
+      this.networkId = await this.web3js.eth.net.getId();
+
       // TODO: not working on mainnet, invalid address ?
       this.smsContract = await getSmsContract(this.web3js, this.networkId);
       this.dthContract = await getDthContract(this.web3js, this.networkId);
       this.detherContract = await getDetherContract(this.web3js, this.networkId);
+
+      this.init = true;
     } catch (e) {
       throw new Error(e);
     }
