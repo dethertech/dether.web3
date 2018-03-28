@@ -1,11 +1,10 @@
 /* eslint-disable no-console */
 /* eslint-disable-next-line */
-import DetherWeb3 from 'detherWeb3';
+import detherWeb3 from 'detherWeb3';
 
 const getInfo = async () => {
   try {
     console.log('Instantiate DetherWeb3');
-    const detherWeb3 = new DetherWeb3();
     await detherWeb3.init();
 
     console.log('Getters:');

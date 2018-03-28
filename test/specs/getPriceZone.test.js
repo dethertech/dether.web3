@@ -1,17 +1,14 @@
 /* global describe it */
 import { expect } from 'chai';
 
-import DetherWeb3 from '../../../src';
+import detherWeb3 from '../../src';
 
-describe('dether web3 is zone open', () => {
-  let detherWeb3;
-
+describe('dether web3 get Price Zone', () => {
   it('should throw a error', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
 
-      await detherWeb3.isZoneOpen();
+      await detherWeb3.getZonePrice();
     } catch (e) {
       expect(e).to.not.equal(null);
     }
@@ -19,10 +16,9 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
 
-      await detherWeb3.isZoneOpen('erg');
+      await detherWeb3.getZonePrice('erg');
     } catch (e) {
       expect(e).to.not.equal(null);
     }
@@ -30,10 +26,9 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
 
-      await detherWeb3.isZoneOpen('11');
+      await detherWeb3.getZonePrice('11');
     } catch (e) {
       expect(e).to.not.equal(null);
     }
@@ -41,10 +36,9 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
 
-      await detherWeb3.isZoneOpen('as');
+      await detherWeb3.getZonePrice('as');
     } catch (e) {
       expect(e).to.not.equal(null);
     }
@@ -52,22 +46,20 @@ describe('dether web3 is zone open', () => {
 
   it('should throw a error', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
 
-      await detherWeb3.isZoneOpen('aE');
+      await detherWeb3.getZonePrice('aE');
     } catch (e) {
       expect(e).to.not.equal(null);
     }
   });
 
-  it('should return true if FR is open', async () => {
+  it('should get the price zone', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
       // TODO: not working invalid ABI
-      const isSms = await detherWeb3.isZoneOpen('FR');
-      expect(isSms).to.equal(true);
+      const isSms = await detherWeb3.getZonePrice('FR');
+      expect(isSms).to.equal(false);
     } catch (e) {
       expect(e).to.equal(null);
     }

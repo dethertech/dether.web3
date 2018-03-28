@@ -1,14 +1,11 @@
 /* global describe it */
 import { expect } from 'chai';
 
-import DetherWeb3 from '../../../src';
+import detherWeb3 from '../../src';
 
 describe('dether web3 add shop', () => {
-  let detherWeb3;
-
   it('should add shop', async () => {
     try {
-      detherWeb3 = new DetherWeb3();
       await detherWeb3.init();
       const data = {
         lat: 1.23,
