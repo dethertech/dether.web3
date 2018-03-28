@@ -7,33 +7,30 @@ const validateShop = (shop) =>
     if (!shop || typeof shop !== 'object') {
       return rej(new Error('Invalid args'));
     }
-    // if (!shop.lat || Number.isNaN(shop.lat) || shop.lat > 90 || shop.lat < -90) {
-    //   return { error: true, msg: 'Invalid latitude' };
-    // }
-    // if (!shop.lng || Number.isNaN(shop.lng) || shop.lng > 180 || shop.lng < -180) {
-    //   return { error: true, msg: 'Invalid longitude' };
-    // }
-    // if (!shop.countryId || shop.countryId < 1 ||  shop.countryId > 4) {
-    //   return { error: true, msg: 'Invalid zone' };
-    // }
-    // if (!shop.rates || shop.rates <= 0 || shop.rates > 100) {
-    //   return { error: true, msg: 'Invalid rates' };
-    // }
-    // if (!shop.avatarId || !Number.isInteger(shop.avatarId) || shop.avatarId < 0) {
-    //   return { error: true, msg: 'Invalid avatar' };
-    // }
-    // if (!shop.currencyId || !Number.isInteger(shop.currencyId) || shop.currencyId < 0) {
-    //   return { error: true, msg: 'Invalid currency' };
-    // }
-    // if (!shop.messengerAddr || shop.messengerAddr.length < 2 || shop.messengerAddr.length > 30) {
-    //   return { error: true, msg: 'Invalid telegram' };
-    // }
-    // if (!shop.amount || Number.isNaN(shop.amount) || shop.amount < 0.01) {
-    //   return { error: true, msg: 'Invalid amount' };
-    // }
-    // if (!shop.postalCode) {
-    //   return { error: true, msg: 'Invalid amount' };
-    // }
+    if (!shop.lat || Number.isNaN(shop.lat) || shop.lat > 90 || shop.lat < -90) {
+      return rej(new Error('Invalid latitude'));
+    }
+    if (!shop.lng || Number.isNaN(shop.lng) || shop.lng > 180 || shop.lng < -180) {
+      return rej(new Error('Invalid longitude'));
+    }
+    if (!shop.countryId || shop.countryId.length !== 2) {
+      return rej(new Error('Invalid country ID'));
+    }
+    if (!shop.postalCode || typeof shop.postalCode !== 'string' || shop.postalCode.length > 16) {
+      return rej(new Error('Invalid postal code'));
+    }
+    if (!shop.cat || typeof shop.cat !== 'string' || shop.cat.length > 16) {
+      return rej(new Error('Invalid categorie'));
+    }
+    if (!shop.name || typeof shop.name !== 'string' || shop.name.length > 16) {
+      return rej(new Error('Invalid categorie'));
+    }
+    if (!shop.description || typeof shop.description !== 'string' || shop.description.length > 32) {
+      return rej(new Error('Invalid categorie'));
+    }
+    if (!shop.opening || typeof shop.opening !== 'string' || shop.opening.length > 14) {
+      return rej(new Error('Invalid categorie'));
+    }
     return res();
   });
 
