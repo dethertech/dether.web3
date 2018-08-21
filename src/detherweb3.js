@@ -247,16 +247,16 @@ class DetherWeb3 {
         const transferMethodTransactionData = web3Abi.encodeFunctionCall(
           overloadedTransferAbi,
           [
-            DetherCore.networks[this.networkId].address,
-            this.web3js.utils.toWei(licencePrice),
+            DetherCore.networks[this._networkId].address,
+            this._web3js.utils.toWei(licencePrice),
             hexShop,
           ],
         );
 
-        return res(await this.web3js.eth
+        return res(await this._web3js.eth
           .sendTransaction({
-            from: this.address,
-            to: DthContract.networks[this.networkId].address,
+            from: this._address,
+            to: DthContract.networks[this._networkId].address,
             data: transferMethodTransactionData,
             value: 0,
             gas: 400000,
