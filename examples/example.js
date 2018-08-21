@@ -1,6 +1,6 @@
 /* eslint-disable no-console */
 /* eslint-disable-next-line */
-import detherWeb3 from 'detherWeb3';
+import detherWeb3 from 'detherweb3';
 
 const getInfo = async () => {
   try {

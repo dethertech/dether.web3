@@ -1,5 +1,71 @@
 # dether.web3
 
+## Run example
+
+* Google Chrome
+* Metamask
+
+TODO
+* Check if the user is logged
+
+Build the package
+```
+yarn build
+```
+
+Creage new React app
+```
+cd examples
+npx create-react-app test
+cd ..
+```
+
+Copy lib directory to node_modules
+```
+mv lib detherweb3
+mv detherweb3 examples/test/node_modules
+```
+
+Copy package json
+```
+cp package.json examples/test/node_modules/detherweb3
+cd examples/test/node_modules/detherweb3
+yarn
+cd ../../../
+```
+
+Copy example.js to src
+```
+cp example.js test/src
+```
+
+Remove everything in src/index.js and paste this code
+```
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import registerServiceWorker from './registerServiceWorker';
+
+import './example';
+
+ReactDOM.render(<App />, document.getElementById('root'));
+registerServiceWorker();
+
+```
+
+Run the app and watch the console on the browser
+```
+cd test/
+yarn start
+```
+
+Update the Build
+```
+yarn build
+cp -r lib/* examples/test/node_modules/detherweb3/
+```
+
 ## Usage
 
 #### Instanciate
