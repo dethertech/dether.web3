@@ -1,5 +1,4 @@
-import intTo5bytes from './intTo5bytes';
-import toNBytes from './toNBytes';
+import { intTo5bytes, toNBytes } from './intToBytes';
 
 /**
  * Formate shop data

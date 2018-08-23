@@ -24,50 +24,36 @@ const getInfo = async () => {
     const isSmsReg = await detherWeb3.isSmsReg();
     console.log(`isSmsReg: ${isSmsReg}`);
 
-    const zoneId = 'FR';
-    const zonePrice = await detherWeb3.getZonePrice(zoneId);
+    const zoneId = 'GI';
+    const zonePrice = await detherWeb3.getTellerZonePrice(zoneId);
     console.log(`zonePrice: ${zonePrice}`);
 
-    const open = await detherWeb3.isZoneOpen(zoneId);
+    const open = await detherWeb3.isTellerZoneOpen(zoneId);
     console.log(`open: ${open}`);
 
-    const data = {
-      lat: 1.23,
-      lng: 12.324,
-      countryId: 'FR',
-      postalCode: '34584',
-      cat: 'catch',
-      name: 'name',
-      description: 'desc',
-      opening: '0000000',
+    const tellerData = {
+      lat: '48.86747',
+      lng: '2.34092',
+      countryId: 'GI',
+      postalCode: '75009',
+      avatarId: '06',
+      currencyId: '2',
+      messenger: 'teller3',
+      rates: 30,
+      buyer: true,
+      buyRates: 10,
     };
 
-
-    const hash = await detherWeb3.addShop(data);
-    console.log(`hash add: ${hash.transactionHash}`);
-
-    setTimeout(async () => {
-      const transactionStatus = await detherWeb3.getTransactionStatus(hash.transactionHash);
-      console.log(`Transaction status: ${transactionStatus}`);
-
-      setTimeout(async () => {
-        try {
-          const shop = await detherWeb3.getShop();
-          console.log(`Get shop: ${shop}`);
-
-          setTimeout(async () => {
-            try {
-              const hashDelete = await detherWeb3.deleteShop();
-              console.log(`Delete shop: ${hashDelete.transactionHash}`);
-            } catch (e) {
-              console.log(e);
-            }
-          }, 15000);
+    try {
+          await detherWeb3.addTeller(tellerData);
+          console.log('Teller added');
+          const teller = await detherWeb3.getTeller();
+          console.log(`Get teller: ${teller}`);
+          const hashDelete = await detherWeb3.deleteTeller();
+          console.log(`Delete teller: ${hashDelete.transactionHash}`);
         } catch (e) {
           console.log(e);
         }
-      }, 15000);
-    }, 10000);
   } catch (e) {
     console.log(e);
   }

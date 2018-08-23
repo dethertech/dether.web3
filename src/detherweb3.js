@@ -5,16 +5,14 @@ import web3Abi from 'web3-eth-abi';
 import Web3 from 'web3';
 
 import { getAddress } from './wallet';
-
-import {
-  overloadedTransferAbi,
-  validateShop,
-} from './constants';
+import { validateShop } from './constants';
 
 import {
   toNBytes,
-  shopFromContract,
-  shopToContract,
+  getOverLoadTransferAbi,
+  sellPointFromContract,
+  sellPointToContract,
+  sendTransaction,
 } from './utils';
 
 import {
@@ -42,12 +40,8 @@ class DetherWeb3 {
       if (typeof this._web3js === 'undefined') throw new Error('Invalid web3js instance');
 
       this._address = await getAddress(this._web3js) || null;
+      this._networkId = await this._web3js.eth.net.getId();
 
-      // TODO: resolve network problem
-      this._networkId = '42';
-      // this.networkId = await this.web3js.eth.net.getId();
-
-      // TODO: not working on mainnet, invalid address ?
       this._smsContract = await getSmsContract(this._web3js, this._networkId);
       this._dthContract = await getDthContract(this._web3js, this._networkId);
       this._detherContract = await getDetherContract(this._web3js, this._networkId);
@@ -55,6 +49,23 @@ class DetherWeb3 {
       throw new Error(e);
     }
   }
+
+  sellPoints = {
+    shop: 'shop',
+    teller: 'teller',
+  }
+
+  addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
+  getShop = () => this.getSellPoint(this.sellPoints.shop);
+  deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
+  getShopZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.shop);
+  isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
+
+  addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
+  getTeller = () => this.getSellPoint(this.sellPoints.teller)
+  deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
+  getTellerZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.teller);
+  isTellerZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.teller)
 
   /**
    * is Ready
@@ -125,12 +136,16 @@ class DetherWeb3 {
    * @param  {string} zoneId Zone id is a string of capitals characters
    * @return {number}        Licence price
    */
-  getZonePrice(zoneId) {
+  getZonePrice(zoneId, sellPoint) {
+    const sellPointMethods = {
+      shop: 'licenceShop',
+      teller: 'licenceTeller',
+    };
+    const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
         const price = await this._detherContract
-          .methods
-          .licenceShop(`0x${toNBytes(zoneId, 2)}`)
+          .methods[methodName](`0x${toNBytes(zoneId, 2)}`)
           .call();
 
         return res(this._web3js.utils.fromWei(price));
@@ -141,35 +156,20 @@ class DetherWeb3 {
   }
 
   /**
-   * Get Transaction status
-   * @param  {string} hash transaction hash
-   * @return {sting}       transaction status
-   */
-  getTransactionStatus(hash) {
-    return new Promise(async (res, rej) => {
-      try {
-        const transaction = await this._web3js.eth.getTransactionReceipt(hash);
-
-        if (!transaction) res('pending');
-        else if (transaction.status === '0x1') res('success');
-        return res('error');
-      } catch (e) {
-        return rej(new Error(e));
-      }
-    });
-  }
-
-  /**
    * Is zone open
    * @param  {string} zoneId Zone id is a string of capitals characters
    * @return {boolean}       returns boolean if the zone is open
    */
-  isZoneOpen(zoneId) {
+  isZoneOpen(zoneId, sellPoint) {
+    const sellPointMethods = {
+      shop: 'openedCountryShop',
+      teller: 'openedCountryTeller',
+    };
+    const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
         const isopen = await this._detherContract
-          .methods
-          .openedCountryShop(`0x${toNBytes(zoneId, 2)}`)
+          .methods[methodName](`0x${toNBytes(zoneId, 2)}`)
           .call();
 
         return res(isopen);
@@ -181,29 +181,32 @@ class DetherWeb3 {
 
   /**
    * Get get from smart contract
-   * @return {object} shop informations
+   * @return {object} sell point informations
    */
-  getShop() {
+  getSellPoint(sellPoint) {
+    const sellPointMethods = {
+      shop: 'getShop',
+      teller: 'getTeller',
+    };
+    const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
-        const rawShop = await this._detherContract
-          .methods
-          .getShop(this._address)
-          .call();
+        const rawSellPoint = await this._detherContract
+          .methods[methodName](this._address).call();
 
-        const id = this._web3js.utils.hexToUtf8(rawShop[2]).replace(/\0/g, '');
+        const id = this._web3js.utils.hexToUtf8(rawSellPoint[2]).replace(/\0/g, '');
 
         if (!id) return res(null);
 
         return res(Object.assign(
           {},
-          await shopFromContract(rawShop, this._web3js),
+          await sellPointFromContract(rawSellPoint, this._web3js),
           {
             ethAddress: this._address,
           },
         ));
       } catch (e) {
-        return rej(new TypeError(`Invalid shop profile: ${e.message}`));
+        return rej(new TypeError(`Invalid sell point profile: ${e.message}`));
       }
     });
   }
@@ -212,12 +215,16 @@ class DetherWeb3 {
    * Delete shop from the smart contract
    * @return {Object} transaction
    */
-  deleteShop() {
+  deleteSellPoint(sellPoint) {
+    const sellPointMethods = {
+      shop: 'deleteShop',
+      teller: 'deleteTeller',
+    };
+    const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
         const tsx = await this._detherContract
-          .methods
-          .deleteShop()
+          .methods[methodName]()
           .send({
             from: this._address,
             gas: 150000,
@@ -235,32 +242,33 @@ class DetherWeb3 {
    * @param {object} shop Shop information
    * @return {Object} transaction
    */
-  addShop(shop) {
+  addSellPoint(sellPointInst, sellPoint) {
     return new Promise(async (res, rej) => {
       try {
-        await validateShop(shop);
-        const licencePrice = await this.getZonePrice(shop.countryId);
+        // await validateSellPoint(sellPointInst);// TODO
+        const licencePrice = await this.getZonePrice(sellPointInst.countryId, sellPoint);
 
         if (!licencePrice) return rej(new Error('Invalid country ID'));
 
-        const hexShop = shopToContract(shop);
+        const overloadedTransferAbi = getOverLoadTransferAbi();
+        const hexSellPoint = sellPointToContract(sellPointInst);
         const transferMethodTransactionData = web3Abi.encodeFunctionCall(
           overloadedTransferAbi,
           [
             DetherCore.networks[this._networkId].address,
             this._web3js.utils.toWei(licencePrice),
-            hexShop,
+            hexSellPoint,
           ],
         );
-
-        return res(await this._web3js.eth
-          .sendTransaction({
+        const rawTx = {
             from: this._address,
             to: DthContract.networks[this._networkId].address,
             data: transferMethodTransactionData,
             value: 0,
             gas: 400000,
-          }));
+          };
+        const txReceipt = await sendTransaction(this._web3js, rawTx);
+        return res(txReceipt);
       } catch (e) {
         return rej(new TypeError(`Invalid shop transaction: ${e.message}`));
       }
