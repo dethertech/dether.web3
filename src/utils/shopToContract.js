@@ -1,4 +1,5 @@
 import { intTo5bytes, toNBytes } from './intToBytes';
+import { validateShop } from '../constants';
 
 /**
  * Formate shop data
@@ -6,6 +7,8 @@ import { intTo5bytes, toNBytes } from './intToBytes';
  * @return {object}         formated shop data
  */
 const shopToContract = (rawshop) => {
+  const validation = validateShop(rawshop);
+  if (validation.error) throw new TypeError(validation.msg);
   const lat = intTo5bytes(parseFloat(rawshop.lat) * 100000);
   const lng = intTo5bytes(parseFloat(rawshop.lng) * 100000);
 

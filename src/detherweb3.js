@@ -5,7 +5,6 @@ import web3Abi from 'web3-eth-abi';
 import Web3 from 'web3';
 
 import { getAddress } from './wallet';
-import { validateShop } from './constants';
 
 import {
   toNBytes,
@@ -13,6 +12,7 @@ import {
   sellPointFromContract,
   sellPointToContract,
   sendTransaction,
+  validateSellPoint,
 } from './utils';
 
 import {
@@ -200,7 +200,7 @@ class DetherWeb3 {
 
         return res(Object.assign(
           {},
-          await sellPointFromContract(rawSellPoint, this._web3js),
+          await sellPointFromContract(rawSellPoint, sellPoint),
           {
             ethAddress: this._address,
           },
@@ -245,13 +245,13 @@ class DetherWeb3 {
   addSellPoint(sellPointInst, sellPoint) {
     return new Promise(async (res, rej) => {
       try {
-        // await validateSellPoint(sellPointInst);// TODO
+        await validateSellPoint(sellPointInst, sellPoint);
         const licencePrice = await this.getZonePrice(sellPointInst.countryId, sellPoint);
 
         if (!licencePrice) return rej(new Error('Invalid country ID'));
 
         const overloadedTransferAbi = getOverLoadTransferAbi();
-        const hexSellPoint = sellPointToContract(sellPointInst);
+        const hexSellPoint = sellPointToContract(sellPointInst, sellPoint);
         const transferMethodTransactionData = web3Abi.encodeFunctionCall(
           overloadedTransferAbi,
           [
@@ -270,7 +270,7 @@ class DetherWeb3 {
         const txReceipt = await sendTransaction(this._web3js, rawTx);
         return res(txReceipt);
       } catch (e) {
-        return rej(new TypeError(`Invalid shop transaction: ${e.message}`));
+        return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
       }
     });
   }

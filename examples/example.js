@@ -44,13 +44,26 @@ const getInfo = async () => {
       buyRates: 10,
     };
 
+    const shopData = {
+      lat: 1.23,
+      lng: 12.324,
+      countryId: 'FR',
+      postalCode: '34584',
+      cat: 'catch',
+      name: 'name',
+      description: 'desc',
+      opening: '0000000',
+    };
+
     try {
           await detherWeb3.addTeller(tellerData);
           console.log('Teller added');
-          const teller = await detherWeb3.getTeller();
-          console.log(`Get teller: ${teller}`);
+          await detherWeb3.addShop(shopData);
+          console.log('Shop added');
           const hashDelete = await detherWeb3.deleteTeller();
           console.log(`Delete teller: ${hashDelete.transactionHash}`);
+          const hashDeleteShop = await detherWeb3.deleteShop();
+          console.log(`Delete shop: ${hashDeleteShop.transactionHash}`);
         } catch (e) {
           console.log(e);
         }
