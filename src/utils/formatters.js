@@ -24,4 +24,20 @@ const sellPointFromContract = (rawSellPoint, sellPoint) => {
   return shopFromContract(rawSellPoint, Web3);
 };
 
-module.exports = { sellPointFromContract, sellPointToContract };
+const addEthersDec = strNum => strNum.includes('.') ? strNum : strNum + '.0'; 
+// TODO: treating an object like an array here? - use string values? rewReput['buyVolume']
+
+const reputFromContract = (rawReput) => {
+  try {
+    return {
+      buyVolume: addEthersDec(Web3.utils.fromWei(rawReput[0], 'ether')),
+      sellVolume: addEthersDec(Web3.utils.fromWei(rawReput[1], 'ether')),
+      numTrade: parseInt(rawReput[2]),
+    };
+  } catch (e) {
+    throw new TypeError(`Invalid reput: ${e.message}`);
+  }
+};
+
+
+module.exports = { sellPointFromContract, sellPointToContract, reputFromContract };

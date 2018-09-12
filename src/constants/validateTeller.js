@@ -19,19 +19,19 @@ const validateTeller = (teller) =>
     if (!teller.postalCode || typeof teller.postalCode !== 'string' || teller.postalCode.length > 16) {
       return rej(new Error('Invalid postal code'));
     }
-    if (!teller.avatarId || typeof teller.avatarId !== 'string') {
+    if (!teller.avatarId || parseInt(teller.avatarId) <= 0 || parseInt(teller.avatarId) >= 20) {
       return rej(new Error('Invalid avatar ID'));
     }
     if (!teller.currencyId) {
       return rej(new Error('Invalid currency ID'));
     }
-    if (!teller.messenger || typeof teller.messenger !== 'string' || teller.messengerAddr.length < 2 || teller.messengerAddr.length > 30) {
+    if (!teller.messenger || typeof teller.messenger !== 'string' || teller.messenger.length < 2 || teller.messenger.length > 30) {
       return rej(new Error('Invalid messenger'));
     }
     if (!teller.rates || teller.rates <= 0 || teller.rates > 100) {
       return rej(new Error('Invalid rates'));
     }
-    if (!teller.buyer || typeof teller.buyer !== 'boolean') {
+    if (teller.buyer === undefined || teller.buyer === null || typeof teller.buyer !== 'boolean') {
       return rej(new Error('Invalid buyer'));
     }
     if (!teller.buyRates || Number.isNaN(teller.buyRates)) {

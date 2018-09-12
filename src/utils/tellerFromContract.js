@@ -6,6 +6,9 @@ import { validateTeller } from '../constants';
  * @param  {object} rawTeller teller data
  * @return {object}         formated teller data
  */
+
+const addEthersDec = strNum => strNum.includes('.') ? strNum : strNum + '.0';
+
 const tellerFromContract = (rawTeller) =>
   new Promise(async (res, rej) => {
     try {
@@ -16,14 +19,14 @@ const tellerFromContract = (rawTeller) =>
           lng: rawTeller[1] / 100000,
           countryId: Web3.utils.hexToUtf8(rawTeller[2]).replace(/\0/g, ''),
           postalCode: Web3.utils.hexToUtf8(rawTeller[3]).replace(/\0/g, ''),
-          currencyId: rawTeller[4],
+          currencyId: parseInt(rawTeller[4]),
           messenger: Web3.utils.hexToUtf8(rawTeller[5]).replace(/\0/g, ''),
-          avatarId: rawTeller[6],
+          avatarId: parseInt(rawTeller[6]),
           rates: rawTeller[7] / 10,
-          balance: Web3.utils.fromWei(rawTeller[8], 'ether'),
+          balance: addEthersDec(Web3.utils.fromWei(rawTeller[8], 'ether')),
           online: rawTeller[9],
           buyer: rawTeller[10] ? rawTeller[10] : rawTeller[10],
-          buyRates: rawTeller[11] ? rawTeller[11] / 10 : 2,
+          buyRates: rawTeller[11] && parseInt(rawTeller[11]) !== 0 ? rawTeller[11] / 10 : 2,
         };
         await validateTeller(newTeller);
         return res(newTeller);

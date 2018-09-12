@@ -3,22 +3,26 @@ import DthContract from 'dethercontract/contracts/DetherToken.json';
 import DetherCore from 'dethercontract/contracts/DetherCore.json';
 import web3Abi from 'web3-eth-abi';
 import Web3 from 'web3';
-
+import BigNumber from './utils/BigNumber';
+import * as ExternalContracts from './utils/externalContracts';
 import { getAddress } from './wallet';
 
 import {
   toNBytes,
   getOverLoadTransferAbi,
+  tellerFromContract,
   sellPointFromContract,
   sellPointToContract,
   sendTransaction,
   validateSellPoint,
+  reputFromContract,
 } from './utils';
 
 import {
   getSmsContract,
   getDthContract,
   getDetherContract,
+  getErc20Contract,
 } from './contracts';
 
 /**
@@ -40,11 +44,14 @@ class DetherWeb3 {
       if (typeof this._web3js === 'undefined') throw new Error('Invalid web3js instance');
 
       this._address = await getAddress(this._web3js) || null;
+      this._address = this._address.toLowerCase();
+
       this._networkId = await this._web3js.eth.net.getId();
 
       this._smsContract = await getSmsContract(this._web3js, this._networkId);
       this._dthContract = await getDthContract(this._web3js, this._networkId);
       this._detherContract = await getDetherContract(this._web3js, this._networkId);
+      console.log('detherweb3 init complete: ', this._address);
     } catch (e) {
       throw new Error(e);
     }
@@ -56,13 +63,13 @@ class DetherWeb3 {
   }
 
   addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
-  getShop = () => this.getSellPoint(this.sellPoints.shop);
+  getShop = (address = this._address) => this.getSellPoint(this.sellPoints.shop, address);
   deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
   getShopZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.shop);
   isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
 
   addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
-  getTeller = () => this.getSellPoint(this.sellPoints.teller)
+  getTeller = (address = this._address) => this.getSellPoint(this.sellPoints.teller, address)
   deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
   getTellerZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.teller);
   isTellerZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.teller)
@@ -85,6 +92,24 @@ class DetherWeb3 {
     );
   }
 
+  //TODO: move to utils
+  addEthersDec = strNum => strNum.includes('.') ? strNum : strNum + '.0';
+
+  isAddr = addr => /^(0x)?[0-9a-f]{40}$/i.test(addr) || /^(0x)?[0-9a-f]{64}$/i.test(addr);
+
+  add0x = (input) => {
+    if (!input || typeof (input) !== typeof '' || !this.isAddr(input)) {
+      throw new Error('Invalid address');
+    }
+    return input.slice(0, 2) !== '0x' ? `0x${input}` : input;
+  };
+
+  getInfo = () => this.getTeller();
+
+  async getAddress() {
+    return this._address;
+  }
+
   /**
    * getBalance return eth and dth balances from eth address
    * @return {object} eth & dth balances
@@ -95,15 +120,20 @@ class DetherWeb3 {
         this._web3js.eth.getBalance(this._address)
           .then(async (result, error) => {
             if (!error) {
-              return res({
-                eth: parseFloat(this._web3js.utils.fromWei(result, 'ether')),
+              return res(
+                // {
+                // eth: parseFloat(this._web3js.utils.fromWei(result, 'ether')),
+                // new BigNumber(parseFloat(this._web3js.utils.fromWei(result, 'ether'))),
+                new BigNumber(result),
+                // new BigNumber(this._web3js.utils.fromWei(result, 'ether')),
                 // TODO: error test
                 // dth: parseFloat(this._web3js.utils.fromWei(
                 //   await this._getDthContract
                 //   .methods.balanceOf(this._address).call(),
                 //   'ether',
                 // )),
-              });
+              // }
+              );
             }
             return rej(new TypeError(`Invalid shop profile: ${error.message}`));
           });
@@ -112,6 +142,7 @@ class DetherWeb3 {
       }
     });
   }
+
 
   /**
    * is the user registered
@@ -178,12 +209,16 @@ class DetherWeb3 {
       }
     });
   }
-
+  async getReput(address = this._address) {
+    const rawReput = await this._detherContract.methods.getReput(address).call();
+    const reput = reputFromContract(rawReput);
+    return reput;
+  }
   /**
    * Get get from smart contract
    * @return {object} sell point informations
    */
-  getSellPoint(sellPoint) {
+  getSellPoint(sellPoint, address) {
     const sellPointMethods = {
       shop: 'getShop',
       teller: 'getTeller',
@@ -191,18 +226,26 @@ class DetherWeb3 {
     const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
-        const rawSellPoint = await this._detherContract
-          .methods[methodName](this._address).call();
-
+        const rawSellPoint = await this._detherContract.methods[methodName](address).call();
+        const rawReput = await this._detherContract.methods.getReput(address).call();
         const id = this._web3js.utils.hexToUtf8(rawSellPoint[2]).replace(/\0/g, '');
 
         if (!id) return res(null);
-
+        if (sellPoint === 'teller') {
+        return res(Object.assign(
+          {},
+          await sellPointFromContract(rawSellPoint, sellPoint),
+          reputFromContract(rawReput),
+          {
+            ethAddress: address,
+          },
+        ));
+        }
         return res(Object.assign(
           {},
           await sellPointFromContract(rawSellPoint, sellPoint),
           {
-            ethAddress: this._address,
+            ethAddress: address,
           },
         ));
       } catch (e) {
@@ -210,6 +253,90 @@ class DetherWeb3 {
       }
     });
   }
+
+  async getAllTellers(addrs) {
+    if (addrs && !Array.isArray(addrs)) throw new TypeError('Need array of addresses as parameter');
+    // const result = addrs || await this.contractInstance.getAllTellers();
+    const result = addrs;
+    if (!result || !result.length) return [];
+    const tellerAddrList = result;
+    // const tellers = await Promise.all(result.map(this.getTeller.bind(this)));
+
+    const tellers = await Promise.all(tellerAddrList.map(this.getTeller.bind(this)));
+    return tellers;
+    // return DetherJS._filterTellerList(tellers);
+  }
+
+  async getAllShops(addrs) {
+    if (addrs && !Array.isArray(addrs)) throw new TypeError('Need array of addresses as parameter');
+    const result = addrs || await this.contractInstance.getAllShops();
+    if (!result || !result.length) return [];
+    const shopAddrList = result;
+    const shops = await Promise.all(shopAddrList.map(this.getShop.bind(this)));
+    return shops;
+    // return DetherJS._filterTellerList(shops);
+  }
+
+  async getTellerBalance(address) {
+    if (!this.isAddr(address)) throw new TypeError('Invalid ETH address');
+    const fullAddress = this.add0x(address);
+    const result = await this._detherContract.methods.getTellerBalance(fullAddress).call();
+    return Number(this._web3js.utils.fromWei(result));
+  }
+
+
+// get all balance
+/**
+ * get all balance of the current account
+ * @param {array} ticker of ERC 20/223
+ * @param {string} address of account to check
+ */
+async getAllBalance(address, ticker) {
+  if (!this.isAddr(address)) throw new TypeError('Invalid ETH address');
+
+  // ETH is handled at end of this function
+  ticker = ticker.filter(x => x !== 'ETH');
+  const result = {};
+  for (const tick of ticker) { // eslint-disable-line no-restricted-syntax
+    let tokenAddress;
+    try {
+      tokenAddress = ExternalContracts.getTokenContractAddr(this._web3js, tick);
+    } catch (err) {
+      throw new TypeError(`found no address for token: ${tick}`);
+    }
+    let erc20;
+    if(tick === 'DTH') {
+      erc20 = await getDthContract(this._web3js, '42');
+    }
+    else {
+       erc20 = await getErc20Contract(this._web3js, tokenAddress);
+      //  erc20 = this._web3js.eth.Contract('',tokenAddress)
+    }
+    const tokenBalance = await erc20.methods.balanceOf(address).call()
+    result[tick] = this.addEthersDec(this._web3js.utils.fromWei(tokenBalance)); // eslint-disable-line no-await-in-loop
+  }
+  const ethBalance = await this._web3js.eth.getBalance(this._address)
+  result.ETH = this.addEthersDec(this._web3js.utils.fromWei(ethBalance));
+
+  return result;
+}
+
+/**
+ * getReput
+ * @param address
+ * @return {promise} reput
+ */
+async getTellerReputation(addr) {
+  const rawTeller = await this._detherContract.methods.getTeller(addr).call();
+  const tellerFormatted = await tellerFromContract(rawTeller);
+  return Object.assign(
+    {},
+    await this.getReput(addr),
+    {
+      messenger: tellerFormatted.messenger,
+    },
+  );
+}
 
   /**
    * Delete shop from the smart contract
@@ -273,6 +400,86 @@ class DetherWeb3 {
         return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
       }
     });
+  }
+
+  /**
+   * get the price of the licence for the shop
+   * @return {string} country
+   */
+  async getLicenceShop(country) {
+    // verif
+    const price = await this._detherContract.methods.licenceShop(this._web3js.utils.toHex(country)).call();
+    return this.addEthersDec(this._web3js.utils.fromWei(price.toString()));
+  }
+
+  /**
+   * get the price of the licence for teller
+   * @return {string} country
+   */
+  async getLicenceTeller(country) {
+    // verif
+    const price = await this._detherContract.methods.licenceTeller(this._web3js.utils.toHex(country)).call();
+    return this.addEthersDec(this._web3js.utils.fromWei(price.toString()));
+  }
+
+  /**
+   * is zone open?
+   * @param {string} countryCode in MAJ
+   * @return {Bool}
+   */
+  async isZoneShopOpen(country) {
+    const res = await this._detherContract.methods.openedCountryShop(this._web3js.utils.toHex(country)).call();
+    return res;
+  }
+
+  /**
+   * is zone open?
+   * @param {string} countryCode in MAJ
+   * @return {Bool}
+   */
+  async isZoneTellerOpen(country) {
+    const res = await this._detherContract.methods.openedCountryTeller(this._web3js.utils.toHex(country)).call();
+    return res;
+  }
+
+  /**
+   * Get zone shop
+   * @param {object} opts
+   * @param {string} opts.countryId code
+   * @param {string} opts.postalCode code
+   */
+  async getZoneShop(opts) {
+    const res = await this._detherContract.methods.getZoneShop(
+      `0x${toNBytes(opts.countryId, 2)}`,
+      `0x${toNBytes(opts.postalCode, 16)}`,
+    ).call();
+    return res;
+  }
+
+  /**
+   * Get zone teller
+   * @param {object} opts
+   * @param {string} opts.countryId code
+   * @param {string} opts.postalCode code
+   */
+  async getZoneTeller(opts) {
+    const res = await this._detherContract.methods.getZoneTeller(
+      `0x${toNBytes(opts.countryId, 2)}`,
+      `0x${toNBytes(opts.postalCode, 16)}`,
+    ).call();
+    return res;
+  }
+
+    /**
+   * Verif if user is sms whitelisted
+   * @param  {string} address  Teller ethereum address
+   * @return {Promise<Bool>} Escrow balance of teller at address
+   */
+  async isCertified(address) {
+    if (!this.isAddr(address)) throw new TypeError('Invalid ETH address');
+    const fullAddress = this.add0x(address);
+    const res = await this._smsContract.methods.certified(fullAddress).call();
+    return res;
   }
 
   // Getters
