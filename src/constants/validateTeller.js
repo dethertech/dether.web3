@@ -10,7 +10,6 @@ const validateTeller = (teller) =>
     if (!teller || typeof teller !== 'object') {
       return rej(new Error('Invalid args'));
     }
-    console.log('EAMON this is teller lat: ', teller.lat);
     if (!hasValue(teller.lat) || Number.isNaN(teller.lat) || teller.lat > 90 || teller.lat < -90) {
       return rej(new Error('Invalid latitude'));
     }
