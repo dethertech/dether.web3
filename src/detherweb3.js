@@ -104,6 +104,8 @@ class DetherWeb3 {
     return input.slice(0, 2) !== '0x' ? `0x${input}` : input;
   };
 
+  isEmptyObj = (myObj) => Object.keys(myObj).map(a => (parseInt(myObj[a]) === 0 || myObj[a] === false)).every(a => a === true)
+
   getInfo = () => this.getTeller();
 
   async getAddress() {
@@ -328,7 +330,7 @@ async getAllBalance(address, ticker) {
  */
 async getTellerReputation(addr) {
   const rawTeller = await this._detherContract.methods.getTeller(addr).call();
-  const tellerFormatted = await tellerFromContract(rawTeller);
+  const tellerFormatted = this.isEmptyObj(rawTeller) ? {messenger: ''} : await tellerFromContract(rawTeller);
   return Object.assign(
     {},
     await this.getReput(addr),
