@@ -48,7 +48,6 @@
     "sinon": "^4.4.8"
   },
   "dependencies": {
-    "babel-polyfill": "^6.26.0",
     "bn.js": "^4.11.8",
     "dethercontract": "^3.6.0",
     "web3": "^1.0.0-beta.35",

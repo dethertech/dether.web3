@@ -3,9 +3,11 @@ import DthContract from 'dethercontract/contracts/DetherToken.json';
 import DetherCore from 'dethercontract/contracts/DetherCore.json';
 import web3Abi from 'web3-eth-abi';
 import Web3 from 'web3';
+import DetherWeb3User from './detherWeb3User';
 import BigNumber from './utils/BigNumber';
 import * as ExternalContracts from './utils/externalContracts';
 import { getAddress } from './wallet';
+import { add0x, isEmptyObj, addEthersDec, isAddr } from './utils/eth';
 
 import {
   toNBytes,
@@ -33,7 +35,20 @@ class DetherWeb3 {
    * Init
    * @return {Promise} instantiate web3 and dether's contract
    */
-  async init() {
+
+  constructor(providerData, { manualInitContracts = false } = {}) {
+    this._networkId = providerData.network;
+    // if (providerData.address) {
+    //   this._address = providerData.address;
+    // }
+    // else {
+    //   console.log('WARNING: no address provided for non-asyn init')
+    // }
+
+    this.init();
+  }
+
+  init() {
     try {
       this._provider = window.web3 && window.web3.currentProvider;
 
@@ -43,14 +58,16 @@ class DetherWeb3 {
 
       if (typeof this._web3js === 'undefined') throw new Error('Invalid web3js instance');
 
-      this._address = await getAddress(this._web3js) || null;
+      // this._address = await getAddress(this._web3js) || null;
+      this._address = window.web3.eth.defaultAccount; // synchronous
       this._address = this._address.toLowerCase();
 
-      this._networkId = await this._web3js.eth.net.getId();
+      // this._networkId = await this._web3js.eth.net.getId();
 
-      this._smsContract = await getSmsContract(this._web3js, this._networkId);
-      this._dthContract = await getDthContract(this._web3js, this._networkId);
-      this._detherContract = await getDetherContract(this._web3js, this._networkId);
+      this._smsContract = getSmsContract(this._web3js, this._networkId);
+      this._dthContract = getDthContract(this._web3js, this._networkId);
+      this._detherContract = getDetherContract(this._web3js, this._networkId);
+
       console.log('detherweb3 init complete: ', this._address);
     } catch (e) {
       throw new Error(e);
@@ -92,24 +109,23 @@ class DetherWeb3 {
     );
   }
 
-  //TODO: move to utils
-  addEthersDec = strNum => strNum.includes('.') ? strNum : strNum + '.0';
-
-  isAddr = addr => /^(0x)?[0-9a-f]{40}$/i.test(addr) || /^(0x)?[0-9a-f]{64}$/i.test(addr);
-
-  add0x = (input) => {
-    if (!input || typeof (input) !== typeof '' || !this.isAddr(input)) {
-      throw new Error('Invalid address');
-    }
-    return input.slice(0, 2) !== '0x' ? `0x${input}` : input;
-  };
-
-  isEmptyObj = (myObj) => Object.keys(myObj).map(a => (parseInt(myObj[a]) === 0 || myObj[a] === false)).every(a => a === true)
-
   getInfo = () => this.getTeller();
 
   async getAddress() {
     return this._address;
+  }
+
+
+  /**
+   * Get instance of DetherUser linked to this Dether instance
+   * @param  {object}  encryptedWallet Encrypted user wallet
+   * @return {Object} DetherUser
+   */
+  getUser(encryptedWallet) {
+    return new DetherWeb3User({
+      encryptedWallet,
+      dether: this,
+    });
   }
 
   /**
@@ -280,8 +296,8 @@ class DetherWeb3 {
   }
 
   async getTellerBalance(address) {
-    if (!this.isAddr(address)) throw new TypeError('Invalid ETH address');
-    const fullAddress = this.add0x(address);
+    if (!isAddr(address)) throw new TypeError('Invalid ETH address');
+    const fullAddress = add0x(address);
     const result = await this._detherContract.methods.getTellerBalance(fullAddress).call();
     return Number(this._web3js.utils.fromWei(result));
   }
@@ -294,7 +310,7 @@ class DetherWeb3 {
  * @param {string} address of account to check
  */
 async getAllBalance(address, ticker) {
-  if (!this.isAddr(address)) throw new TypeError('Invalid ETH address');
+  if (!isAddr(address)) throw new TypeError('Invalid ETH address');
 
   // ETH is handled at end of this function
   ticker = ticker.filter(x => x !== 'ETH');
@@ -307,18 +323,17 @@ async getAllBalance(address, ticker) {
       throw new TypeError(`found no address for token: ${tick}`);
     }
     let erc20;
-    if(tick === 'DTH') {
+    if (tick === 'DTH') {
       erc20 = await getDthContract(this._web3js, '42');
-    }
-    else {
-       erc20 = await getErc20Contract(this._web3js, tokenAddress);
+    } else {
+      erc20 = await getErc20Contract(this._web3js, tokenAddress);
       //  erc20 = this._web3js.eth.Contract('',tokenAddress)
     }
     const tokenBalance = await erc20.methods.balanceOf(address).call()
-    result[tick] = this.addEthersDec(this._web3js.utils.fromWei(tokenBalance)); // eslint-disable-line no-await-in-loop
+    result[tick] = addEthersDec(this._web3js.utils.fromWei(tokenBalance)); // eslint-disable-line no-await-in-loop
   }
   const ethBalance = await this._web3js.eth.getBalance(this._address)
-  result.ETH = this.addEthersDec(this._web3js.utils.fromWei(ethBalance));
+  result.ETH = addEthersDec(this._web3js.utils.fromWei(ethBalance));
 
   return result;
 }
@@ -330,7 +345,7 @@ async getAllBalance(address, ticker) {
  */
 async getTellerReputation(addr) {
   const rawTeller = await this._detherContract.methods.getTeller(addr).call();
-  const tellerFormatted = this.isEmptyObj(rawTeller) ? {messenger: ''} : await tellerFromContract(rawTeller);
+  const tellerFormatted = isEmptyObj(rawTeller) ? {messenger: ''} : await tellerFromContract(rawTeller);
   return Object.assign(
     {},
     await this.getReput(addr),
@@ -411,7 +426,7 @@ async getTellerReputation(addr) {
   async getLicenceShop(country) {
     // verif
     const price = await this._detherContract.methods.licenceShop(this._web3js.utils.toHex(country)).call();
-    return this.addEthersDec(this._web3js.utils.fromWei(price.toString()));
+    return addEthersDec(this._web3js.utils.fromWei(price.toString()));
   }
 
   /**
@@ -421,7 +436,7 @@ async getTellerReputation(addr) {
   async getLicenceTeller(country) {
     // verif
     const price = await this._detherContract.methods.licenceTeller(this._web3js.utils.toHex(country)).call();
-    return this.addEthersDec(this._web3js.utils.fromWei(price.toString()));
+    return addEthersDec(this._web3js.utils.fromWei(price.toString()));
   }
 
   /**
@@ -478,8 +493,8 @@ async getTellerReputation(addr) {
    * @return {Promise<Bool>} Escrow balance of teller at address
    */
   async isCertified(address) {
-    if (!this.isAddr(address)) throw new TypeError('Invalid ETH address');
-    const fullAddress = this.add0x(address);
+    if (!isAddr(address)) throw new TypeError('Invalid ETH address');
+    const fullAddress = add0x(address);
     const res = await this._smsContract.methods.certified(fullAddress).call();
     return res;
   }
@@ -519,4 +534,4 @@ async getTellerReputation(addr) {
   }
 }
 
-export default new DetherWeb3();
+export default DetherWeb3;
