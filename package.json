@@ -1,6 +1,6 @@
 {
   "name": "tempdetherweb3",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "description": "Dether SDK to easily call smart contract with web3js",
   "main": "lib/index.js",
   "scripts": {
