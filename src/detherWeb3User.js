@@ -296,11 +296,12 @@ class DetherWeb3User {
     //      nonce,
     //    });
      if (opts.token === 'ETH') {
+       const weiAmount = this.dether._web3js.utils.toWei(opts.amount)
        const addr = await this.dether.getAddress(); // .ethAddress? 
        const result = await this.dether._web3js.eth.sendTransaction({
         from: addr,
         to: opts.receiverAddress,
-        value: '1000000000000000',
+        value: weiAmount,
         gas: '1000000',
     });
     }
