@@ -8,6 +8,7 @@ import BigNumber from './utils/BigNumber';
 import * as ExternalContracts from './utils/externalContracts';
 import { getAddress } from './wallet';
 import { add0x, isEmptyObj, addEthersDec, isAddr } from './utils/eth';
+import { TICKER } from './constants/appConstants'
 
 import {
   toNBytes,
@@ -127,6 +128,8 @@ class DetherWeb3 {
       dether: this,
     });
   }
+
+
 
   /**
    * getBalance return eth and dth balances from eth address
@@ -317,11 +320,11 @@ async getAllBalance(address, ticker) {
   const result = {};
   for (const tick of ticker) { // eslint-disable-line no-restricted-syntax
     let tokenAddress;
-    try {
-      tokenAddress = ExternalContracts.getTokenContractAddr(this._web3js, tick);
-    } catch (err) {
-      throw new TypeError(`found no address for token: ${tick}`);
-    }
+    // try {
+      tokenAddress = TICKER['kovan'][tick] //ExternalContracts.getTokenContractAddr(this._web3js, tick);
+    // } catch (err) {
+    //   throw new TypeError(`found no address for token: ${tick}`);
+    // }
     let erc20;
     if (tick === 'DTH') {
       erc20 = await getDthContract(this._web3js, '42');
