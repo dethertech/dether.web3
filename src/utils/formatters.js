@@ -39,5 +39,18 @@ const reputFromContract = (rawReput) => {
   }
 };
 
+const updateToContract = (rawUpdate) => {
+  try {
+    return {
+      currencyId: parseInt(rawUpdate.currencyId, 10),
+      messenger: `0x${toNBytes(rawUpdate.messenger, 16)}`,
+      avatarId: parseInt(rawUpdate.avatarId, 10),
+      rates: parseInt(parseFloat(rawUpdate.rates, 10) * 10, 10),
+      online: true,
+    }
+  } catch(e) {
+    throw new TypeError(`Invalid update profile`);
+  }
+}
 
-module.exports = { sellPointFromContract, sellPointToContract, reputFromContract };
+module.exports = { sellPointFromContract, sellPointToContract, reputFromContract, updateToContract };

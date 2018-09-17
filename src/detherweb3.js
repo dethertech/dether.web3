@@ -8,7 +8,7 @@ import BigNumber from './utils/BigNumber';
 import * as ExternalContracts from './utils/externalContracts';
 import { getAddress } from './wallet';
 import { add0x, isEmptyObj, addEthersDec, isAddr } from './utils/eth';
-import { TICKER } from './constants/appConstants'
+import { TICKER } from './constants/appConstants';
 
 import {
   toNBytes,
@@ -24,8 +24,10 @@ import {
 import {
   getSmsContract,
   getDthContract,
+  getDetherBank,
   getDetherContract,
   getErc20Contract,
+  getExchangeRateOracleContract,
 } from './contracts';
 
 /**
@@ -38,7 +40,8 @@ class DetherWeb3 {
    */
 
   constructor(providerData, { manualInitContracts = false } = {}) {
-    this._networkId = providerData.network;
+    const networks = { kovan: 42, mainnet: 1 }
+    this._networkId = networks[providerData.network];
     // if (providerData.address) {
     //   this._address = providerData.address;
     // }
@@ -128,7 +131,6 @@ class DetherWeb3 {
       dether: this,
     });
   }
-
 
 
   /**
@@ -502,6 +504,40 @@ async getTellerReputation(addr) {
     return res;
   }
 
+  async availableSellAmount(address, unit = 'eth') { // eslint-disable-line
+    if (!['eth', 'usd', 'wei'].includes(unit)) {
+      throw new TypeError('invalid unit (2nd arg) specified, allowed values: eth, wei, usd');
+    }
+    const DetherCoreContract = this._detherContract;
+    const DetherBank = getDetherBank(this._web3js);
+    const DetherExchangeRateOracle = getExchangeRateOracleContract(this._web3js);
+
+    if (!DetherCoreContract.methods.isTeller(address).call()) {
+      throw new TypeError('address is not a Teller');
+    }
+
+    const countryId = (await DetherCoreContract.methods.getTeller(address).call())[2];
+    const tier = (await DetherCoreContract.methods.isTier2(address).call()) ? 2
+                 : (await DetherCoreContract.methods.isTier1(address).call()) ? 1
+                 : 0;
+
+    const weiSoldToday = await DetherBank.methods.getWeiSoldToday(address).call();
+    const usdDailyLimit = await DetherCoreContract.methods.getSellDailyLimit(tier, Web3.eth.utils.toHex(countryId)).call();
+    const weiPriceOneUsd = await DetherExchangeRateOracle.methods.getWeiPriceOneUsd().calL();
+    const weiDailyLimit = usdDailyLimit.mul(weiPriceOneUsd);
+    const weiLeftToSell = weiDailyLimit.sub(weiSoldToday);
+
+    switch (unit) {
+      case 'usd':
+        return weiLeftToSell.div(weiPriceOneUsd).toString();
+      case 'eth':
+        return Web3.eth.utils.fromWei(weiLeftToSell);
+      case 'wei':
+        return weiLeftToSell.toString();
+      default:
+        break;
+    }
+  }
   // Getters
 
   /**
