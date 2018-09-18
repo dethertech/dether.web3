@@ -318,29 +318,25 @@ class DetherWeb3 {
 async getAllBalance(address, ticker) {
   if (!isAddr(address)) throw new TypeError('Invalid ETH address');
 
-  // ETH is handled at end of this function
-  ticker = ticker.filter(x => x !== 'ETH');
-  const result = {};
-  for (const tick of ticker) { // eslint-disable-line no-restricted-syntax
-    let tokenAddress;
-    // try {
-      tokenAddress = TICKER[this._network][tick] //ExternalContracts.getTokenContractAddr(this._web3js, tick);
-    // } catch (err) {
-    //   throw new TypeError(`found no address for token: ${tick}`);
-    // }
-    let erc20;
-    if (tick === 'DTH') {
-      erc20 = getDthContract(this._web3js, this._networkId);
-    } else {
-      erc20 = getErc20Contract(this._web3js, tokenAddress);
-      //  erc20 = this._web3js.eth.Contract('',tokenAddress)
-    }
-    const tokenBalance = '16000000000000000000'; //await erc20.methods.balanceOf(address).call()
-    result[tick] = addEthersDec(this._web3js.utils.fromWei(tokenBalance)); // eslint-disable-line no-await-in-loop
-  }
-  const ethBalance = '16000000000000000000'; //await this._web3js.eth.getBalance(this._address)
-  result.ETH = addEthersDec(this._web3js.utils.fromWei(ethBalance));
+  const formatBalance = (weiBalance) => addEthersDec(this._web3js.utils.fromWei(weiBalance));
+  const erc20Contract = (token) => getErc20Contract(this._web3js, TICKER[this._network][token]);
 
+  const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH');
+
+  const tokenBalancePromises = tokens.map(token => (erc20Contract(token)).methods.balanceOf(address).call());
+  const dthBalancePromise = this._dthContract.methods.balanceOf(address).call();
+  const ethBalancePromise = this._web3js.eth.getBalance(this._address);
+
+  tokenBalancePromises.push(dthBalancePromise, ethBalancePromise);
+  tokens.push('DTH', 'ETH');
+
+  const weiBalances = await Promise.all(tokenBalancePromises);
+  const balances = weiBalances.map(formatBalance);
+
+  const result = balances.reduce((acc, bal, index) => {
+    acc[tokens[index].toString()] = bal;
+    return acc;
+  }, {});
   return result;
 }
 
