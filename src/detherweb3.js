@@ -330,9 +330,9 @@ async getAllBalance(address, ticker) {
     // }
     let erc20;
     if (tick === 'DTH') {
-      erc20 = await getDthContract(this._web3js, this._networkId);
+      erc20 = getDthContract(this._web3js, this._networkId);
     } else {
-      erc20 = await getErc20Contract(this._web3js, tokenAddress);
+      erc20 = getErc20Contract(this._web3js, tokenAddress);
       //  erc20 = this._web3js.eth.Contract('',tokenAddress)
     }
     const tokenBalance = await erc20.methods.balanceOf(address).call()
