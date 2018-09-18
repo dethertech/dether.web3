@@ -322,21 +322,25 @@ async getAllBalance(address, ticker) {
   const erc20Contract = (token) => getErc20Contract(this._web3js, TICKER[this._network][token]);
 
   const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH');
-
+  console.log(`DEBUG: getting tokens balance for: ${tokens}`);
   const tokenBalancePromises = tokens.map(token => (erc20Contract(token)).methods.balanceOf(address).call());
+  console.log('DEBUG: called all erc20 token contracts');
   const dthBalancePromise = this._dthContract.methods.balanceOf(address).call();
+  console.log('DEBUG: called dth token contracts');
   const ethBalancePromise = this._web3js.eth.getBalance(this._address);
+  console.log('DEBUG: called  web3 eth get balance');
 
   tokenBalancePromises.push(dthBalancePromise, ethBalancePromise);
   tokens.push('DTH', 'ETH');
 
   const weiBalances = await Promise.all(tokenBalancePromises);
   const balances = weiBalances.map(formatBalance);
-
+  console.log(`DEBUG: resolved balances: ${balances} first: ${balances[0]}`);
   const result = balances.reduce((acc, bal, index) => {
     acc[tokens[index].toString()] = bal;
     return acc;
   }, {});
+  console.log(`DEBUG: balance results obj: ${result} ZRX: ${result['ZRX']} DTH: ${result['DTH']}`)
   return result;
 }
 

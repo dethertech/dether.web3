@@ -42,6 +42,7 @@ class DetherWeb3User {
     this.encryptedWallet = opts.encryptedWallet;
     const parsedWallet = JSON.parse(opts.encryptedWallet);
     this.address = add0x(parsedWallet.address);
+    console.log(`DEBUG: constructor detherweb3user ${this.address}`)
   }
 
   /**
@@ -243,7 +244,7 @@ class DetherWeb3User {
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const tsx = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
-          gas: 1000000
+          gas: 1000000,
         });
         return tsx.hash;
       } else if (TICKER[this.dether.network][opts.token]) {
@@ -252,7 +253,7 @@ class DetherWeb3User {
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const tsx = await erc20.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
-          gas: 1000000
+          gas: 1000000,
         });
         return tsx.hash;
       }
