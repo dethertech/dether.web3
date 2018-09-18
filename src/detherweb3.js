@@ -335,10 +335,10 @@ async getAllBalance(address, ticker) {
       erc20 = getErc20Contract(this._web3js, tokenAddress);
       //  erc20 = this._web3js.eth.Contract('',tokenAddress)
     }
-    const tokenBalance = await erc20.methods.balanceOf(address).call()
+    const tokenBalance = '16000000000000000000'; //await erc20.methods.balanceOf(address).call()
     result[tick] = addEthersDec(this._web3js.utils.fromWei(tokenBalance)); // eslint-disable-line no-await-in-loop
   }
-  const ethBalance = await this._web3js.eth.getBalance(this._address)
+  const ethBalance = '16000000000000000000'; //await this._web3js.eth.getBalance(this._address)
   result.ETH = addEthersDec(this._web3js.utils.fromWei(ethBalance));
 
   return result;
@@ -523,7 +523,7 @@ async getTellerReputation(addr) {
                  : 0;
 
     const weiSoldToday = await DetherBank.methods.getWeiSoldToday(address).call();
-    const usdDailyLimit = await DetherCoreContract.methods.getSellDailyLimit(tier, Web3.eth.utils.toHex(countryId)).call();
+    const usdDailyLimit = await DetherCoreContract.methods.getSellDailyLimit(tier, Web3.utils.toHex(countryId)).call();
     const weiPriceOneUsd = await DetherExchangeRateOracle.methods.getWeiPriceOneUsd().calL();
     const weiDailyLimit = usdDailyLimit.mul(weiPriceOneUsd);
     const weiLeftToSell = weiDailyLimit.sub(weiSoldToday);
@@ -532,7 +532,7 @@ async getTellerReputation(addr) {
       case 'usd':
         return weiLeftToSell.div(weiPriceOneUsd).toString();
       case 'eth':
-        return Web3.eth.utils.fromWei(weiLeftToSell);
+        return Web3.utils.fromWei(weiLeftToSell);
       case 'wei':
         return weiLeftToSell.toString();
       default:

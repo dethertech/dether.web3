@@ -44,6 +44,7 @@ export const add0x = (input) => {
 //   }
 // };
 
+// format Web3 number results like Ethers numbers with .0 when no decimals
 export const addEthersDec = strNum => strNum.includes('.') ? strNum : strNum + '.0';
 
 export const isEmptyObj = (myObj) => Object.keys(myObj).map(a => (parseInt(myObj[a]) === 0 || myObj[a] === false)).every(a => a === true); // eslint-disable-line max-len
