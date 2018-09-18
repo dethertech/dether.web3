@@ -22,9 +22,6 @@ import SmsCertifier from 'dethercontract/contracts/SmsCertifier.json';
 //   });
 // }
 
-// can't promisify this if we are to set it in the synchronous init() now
-// const getSmsContract = (web3js, id) => new web3js.eth.Contract(SmsCertifier.abi, SmsCertifier.networks[id].address);
-const getSmsContract = (web3js, id) => new web3js.eth.Contract(SmsCertifier.abi, '0x4ee1f732e64826b616cd80b5fff3c6bce54b7035');
-
+const getSmsContract = (web3js, id) => new web3js.eth.Contract(SmsCertifier.abi, SmsCertifier.networks[id]['address']);
 
 export default getSmsContract;

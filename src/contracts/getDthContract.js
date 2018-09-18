@@ -22,7 +22,7 @@ import DthContract from 'dethercontract/contracts/DetherToken.json';
 //   });
 // }
 
-// const getDthContract = (web3js, id) => new web3js.eth.Contract(DthContract.abi, DthContract.networks[id].address);
-const getDthContract = (web3js, id) => new web3js.eth.Contract(DthContract.abi, '0x9027E9FC4641e2991A36Eaeb0347Bc5b35322741');
+const getDthContract = (web3js, id) => new web3js.eth.Contract(DthContract.abi, DthContract.networks[id]['address']);
+
 
 export default getDthContract;

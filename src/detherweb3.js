@@ -41,6 +41,7 @@ class DetherWeb3 {
 
   constructor(providerData, { manualInitContracts = false } = {}) {
     const networks = { kovan: 42, mainnet: 1 }
+    this._network = providerData.network;
     this._networkId = networks[providerData.network];
     // if (providerData.address) {
     //   this._address = providerData.address;
@@ -323,13 +324,13 @@ async getAllBalance(address, ticker) {
   for (const tick of ticker) { // eslint-disable-line no-restricted-syntax
     let tokenAddress;
     // try {
-      tokenAddress = TICKER['kovan'][tick] //ExternalContracts.getTokenContractAddr(this._web3js, tick);
+      tokenAddress = TICKER[this._network][tick] //ExternalContracts.getTokenContractAddr(this._web3js, tick);
     // } catch (err) {
     //   throw new TypeError(`found no address for token: ${tick}`);
     // }
     let erc20;
     if (tick === 'DTH') {
-      erc20 = await getDthContract(this._web3js, '42');
+      erc20 = await getDthContract(this._web3js, this._networkId);
     } else {
       erc20 = await getErc20Contract(this._web3js, tokenAddress);
       //  erc20 = this._web3js.eth.Contract('',tokenAddress)
@@ -509,8 +510,8 @@ async getTellerReputation(addr) {
       throw new TypeError('invalid unit (2nd arg) specified, allowed values: eth, wei, usd');
     }
     const DetherCoreContract = this._detherContract;
-    const DetherBank = getDetherBank(this._web3js);
-    const DetherExchangeRateOracle = getExchangeRateOracleContract(this._web3js);
+    const DetherBank = getDetherBank(this._web3js, this._networkId);
+    const DetherExchangeRateOracle = getExchangeRateOracleContract(this._web3js, this._networkId);
 
     if (!DetherCoreContract.methods.isTeller(address).call()) {
       throw new TypeError('address is not a Teller');

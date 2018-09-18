@@ -22,7 +22,7 @@ import DetherCore from 'dethercontract/contracts/DetherCore.json';
 //   });
 // }
 
-// const getDetherContract = (web3js, id) => new web3js.eth.Contract(DetherCore.abi, DetherCore.networks[id].address);
-const getDetherContract = (web3js, id) => new web3js.eth.Contract(DetherCore.abi, '0x484e4411a840727cc4814b396720742a388e9c70');
+const getDetherContract = (web3js, id) => new web3js.eth.Contract(DetherCore.abi, DetherCore.networks[id]['address']);
+
 
 export default getDetherContract;

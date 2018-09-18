@@ -239,7 +239,7 @@ class DetherWeb3User {
         });
         return result.hash;
       } else if (opts.token === 'DTH') {
-        const dthContract = await getDthContract(this.dether._web3js);
+        const dthContract = await getDthContract(this.dether._web3js, this.dether._networkId);
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const tsx = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
@@ -269,7 +269,7 @@ class DetherWeb3User {
    * @return {Promise<object>}  Transaction
    */
   async certifyNewUser(opts, password) {
-    const smsContract = await getSmsContract(this.dether._web3js);
+    const smsContract = await getSmsContract(this.dether._web3js, this.dether._networkId);
     const address = await this.dether.getAddress();
     const transaction = await smsContract.methods.certify(opts.user).send({ from: address, gas: 1000000 });
     // // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
@@ -286,7 +286,7 @@ class DetherWeb3User {
    * @return {Promise<object>}  Transaction
    */
   async revokeUser(opts, password) {
-    const smsContract = await getSmsContract(this.dether._web3js)
+    const smsContract = await getSmsContract(this.dether._web3js, this.dether._networkId);
     const address = await this.dether.getAddress();
     const transaction = await smsContract.methods.revoke(opts.user).send({ from: address, gas: 1000000 });
     // // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
