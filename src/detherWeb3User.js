@@ -42,7 +42,6 @@ class DetherWeb3User {
     this.encryptedWallet = opts.encryptedWallet;
     const parsedWallet = JSON.parse(opts.encryptedWallet);
     this.address = add0x(parsedWallet.address);
-    console.log(`DEBUG: constructor detherweb3user ${this.address}`)
   }
 
   /**
