@@ -235,7 +235,7 @@ class DetherWeb3User {
           from: address,
           to: opts.receiverAddress,
           value: weiAmount,
-          gas: '1000000',
+          gas: 100000,
         });
         return result.hash;
       } else if (opts.token === 'DTH') {
@@ -243,7 +243,7 @@ class DetherWeb3User {
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const tsx = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
-          gas: 1000000,
+          gas: 100000,
         });
         return tsx.hash;
       } else if (TICKER[this.dether.network][opts.token]) {
@@ -252,7 +252,7 @@ class DetherWeb3User {
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const tsx = await erc20.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
-          gas: 1000000,
+          gas: 100000,
         });
         return tsx.hash;
       }
