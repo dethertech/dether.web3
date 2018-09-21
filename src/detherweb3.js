@@ -490,6 +490,28 @@ async getTellerReputation(addr) {
   }
 
     /**
+   * Get Transaction status
+   * @param  {string} hash transaction hash
+   * @return {object}      transaction status
+   */
+
+  async getTransactionStatus(hash) {
+    return new Promise(async (res, rej) => {
+      try {
+        if (hash === 'UNKNOWN') {
+          return res({ status: 'pending' });
+        }
+        const transaction = await this._web3js.eth.getTransactionReceipt(hash);
+
+        if (!transaction) res({ status: 'pending' });
+        else if (this._web3js.utils.toHex(transaction.status) === '0x01') res({ status: 'success' });
+        return res({ status: 'error' });
+      } catch (e) {
+        return rej(new Error(e));
+      }
+    });
+  }
+    /**
    * Verif if user is sms whitelisted
    * @param  {string} address  Teller ethereum address
    * @return {Promise<Bool>} Escrow balance of teller at address

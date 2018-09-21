@@ -11,6 +11,7 @@ import { add0x, getMaxUint256Value } from './utils/eth';
 import { updateToContract } from './utils/formatters';
 import { exchangeTokens } from './utils/exchangeTokens';
 import * as ExternalContracts from './utils/externalContracts';
+import sendTransaction from './utils/transaction';
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -227,37 +228,43 @@ class DetherWeb3User {
    * @param  {string} password  Wallet password
    * @return {Promise<object>}  Transaction
    */
-   async sendToken(opts, password) { 
+   async sendToken(opts, password) {
       const address = await this.dether.getAddress();
       if (opts.token === 'ETH') {
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
-        const result = await this.dether._web3js.eth.sendTransaction({
+        const txReceipt = await this.dether._web3js.eth.sendTransaction({
           from: address,
           to: opts.receiverAddress,
           value: weiAmount,
+          gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
           gas: 100000,
         });
-        return result.hash;
+        return txReceipt.transactionHash;
       } else if (opts.token === 'DTH') {
         const dthContract = await getDthContract(this.dether._web3js, this.dether._networkId);
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
-        const tsx = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
+        const txReceipt = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
+          gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
           gas: 100000,
         });
-        return tsx.hash;
+        return txReceipt.transactionHash;
       } else if (TICKER[this.dether.network][opts.token]) {
         // it's not DTH token but another token
         const erc20 = await getErc20Contract(this.dether._web3js, TICKER[this.dether.network][opts.token]);
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
-        const tsx = await erc20.methods.transfer(opts.receiverAddress, weiAmount).send({
+        const txReceipt = await erc20.methods.transfer(opts.receiverAddress, weiAmount).send({
           from: address,
+          gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
           gas: 100000,
+
         });
-        return tsx.hash;
+        return txReceipt.transactionHash;
       }
-      return opts.token;
+      else {
+        throw new Error('invalid sendToken request')
       }
+    }
 
   /**
    * Certify New User, this function whitelist by sms new user, USER SHOULD BE SMS.DELEGATE
