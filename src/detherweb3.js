@@ -40,7 +40,7 @@ class DetherWeb3 {
    */
 
   constructor(providerData, { manualInitContracts = false } = {}) {
-    const networks = { kovan: 42, mainnet: 1 }
+    const networks = { kovan: 42, mainnet: 1 };
     this._network = providerData.network;
     this._networkId = networks[providerData.network];
     // if (providerData.address) {
@@ -85,13 +85,13 @@ class DetherWeb3 {
   }
 
   addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
-  getShop = (address = this._address) => this.getSellPoint(this.sellPoints.shop, address);
+  getShop = (address) => this.getSellPoint(this.sellPoints.shop, address);
   deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
   getShopZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.shop);
   isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
 
   addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
-  getTeller = (address = this._address) => this.getSellPoint(this.sellPoints.teller, address)
+  getTeller = (address) => this.getSellPoint(this.sellPoints.teller, address)
   deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
   getTellerZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.teller);
   isTellerZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.teller)
@@ -115,11 +115,6 @@ class DetherWeb3 {
   }
 
   getInfo = () => this.getTeller();
-
-  async getAddress() {
-    return this._address;
-  }
-
 
   /**
    * Get instance of DetherUser linked to this Dether instance
@@ -172,12 +167,12 @@ class DetherWeb3 {
    * is the user registered
    * @return {Boolean} returns a boolean if the user is registered
    */
-  isSmsReg() {
+  isSmsReg(address) {
     return new Promise(async (res, rej) => {
       try {
         const isReg = await this._smsContract
           .methods
-          .certified(this._address)
+          .certified(address)
           .call();
         return res(isReg);
       } catch (e) {
@@ -320,8 +315,7 @@ async getAllBalance(address, ticker) {
 
   const formatBalance = (weiBalance) => addEthersDec(this._web3js.utils.fromWei(weiBalance));
   const erc20Contract = (token) => getErc20Contract(this._web3js, TICKER[this._network][token]);
-
-  const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH');
+  const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH' && x !== 'AE');// TODO https://github.com/ethereum/web3.js/issues/1089 'AE' call
 
   const tokenBalancePromises = tokens.map(token => (erc20Contract(token)).methods.balanceOf(address).call());
   const dthBalancePromise = this._dthContract.methods.balanceOf(address).call();
@@ -330,13 +324,11 @@ async getAllBalance(address, ticker) {
   tokenBalancePromises.push(dthBalancePromise, ethBalancePromise);
   const weiBalances = await Promise.all(tokenBalancePromises);
   const balances = weiBalances.map(formatBalance);
-
   tokens.push('DTH', 'ETH');
   const result = balances.reduce((acc, bal, index) => {
     acc[tokens[index].toString()] = bal;
     return acc;
   }, {});
-
   return result;
 }
 

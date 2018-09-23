@@ -138,12 +138,10 @@ class DetherWeb3User {
    * @param {number} opts.gasPrice (optional) gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
    */
    async updateTeller(opts, password) {
-
     const weiAmount = this.dether._web3js.utils.toWei(amount.toString())
     const detherCoreContract = this.dether._detherContract;
-    const address = await this.dether.getAddress();
      const formatedUpdate = updateToContract(opts);
-     const transaction = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate)).send({ from: address, value: weiAmount, gas: 1000000 });
+     const transaction = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate)).send({ from: this.address, value: weiAmount, gas: 1000000 });
      return transaction.hash;
    }
 
@@ -161,7 +159,7 @@ class DetherWeb3User {
 
     const weiAmount = Web3.eth.utils.toWei(amount.toString());
     const detherCoreContract = this.dether._detherContract;
-    const address = await this.dether.getAddress();
+    const address = this.address;
     const transaction = await detherCoreContract.methods
       .sellEth(
         add0x(receiver),
@@ -192,8 +190,7 @@ class DetherWeb3User {
    */
   async deleteSellPointModerator(opts, password) {
     const detherCoreContract = this.dether._detherContract;
-    const address = await this.dether.getAddress();
-    const transaction = await detherCoreContract.methods.deleteTellerMods(opts.toDelete).send({ from: address, gas: 1000000 });
+    const transaction = await detherCoreContract.methods.deleteTellerMods(opts.toDelete).send({ from: this.address, gas: 1000000 });
     // // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
     return transaction.hash;
   }
@@ -210,8 +207,7 @@ class DetherWeb3User {
    */
   async turnOfflineSellPoint(opts ,password) {
     const detherCoreContract = await this.dether._detherContract;
-    const address = await this.dether.getAddress();
-    const transaction = await detherCoreContract.methods.switchTellerOffline().send({ from: address, gas: 1000000 });
+    const transaction = await detherCoreContract.methods.switchTellerOffline().send({ from: this.address, gas: 1000000 });
     // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
     // return minedTsx;
     return transaction.hash;
@@ -229,11 +225,10 @@ class DetherWeb3User {
    * @return {Promise<object>}  Transaction
    */
    async sendToken(opts, password) {
-      const address = await this.dether.getAddress();
       if (opts.token === 'ETH') {
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const txReceipt = await this.dether._web3js.eth.sendTransaction({
-          from: address,
+          from: this.address,
           to: opts.receiverAddress,
           value: weiAmount,
           gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
@@ -244,7 +239,7 @@ class DetherWeb3User {
         const dthContract = await getDthContract(this.dether._web3js, this.dether._networkId);
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const txReceipt = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
-          from: address,
+          from: this.address,
           gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
           gas: 100000,
         });
@@ -254,16 +249,13 @@ class DetherWeb3User {
         const erc20 = await getErc20Contract(this.dether._web3js, TICKER[this.dether.network][opts.token]);
         const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
         const txReceipt = await erc20.methods.transfer(opts.receiverAddress, weiAmount).send({
-          from: address,
+          from: this.address,
           gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
           gas: 100000,
-
         });
         return txReceipt.transactionHash;
       }
-      else {
-        throw new Error('invalid sendToken request')
-      }
+        throw new Error('invalid sendToken request');
     }
 
   /**
@@ -277,8 +269,7 @@ class DetherWeb3User {
    */
   async certifyNewUser(opts, password) {
     const smsContract = await getSmsContract(this.dether._web3js, this.dether._networkId);
-    const address = await this.dether.getAddress();
-    const transaction = await smsContract.methods.certify(opts.user).send({ from: address, gas: 1000000 });
+    const transaction = await smsContract.methods.certify(opts.user).send({ from: this.address, gas: 1000000 });
     // // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
     return transaction.hash;
   }
@@ -294,8 +285,7 @@ class DetherWeb3User {
    */
   async revokeUser(opts, password) {
     const smsContract = await getSmsContract(this.dether._web3js, this.dether._networkId);
-    const address = await this.dether.getAddress();
-    const transaction = await smsContract.methods.revoke(opts.user).send({ from: address, gas: 1000000 });
+    const transaction = await smsContract.methods.revoke(opts.user).send({ from: this.address, gas: 1000000 });
     // // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
     return transaction.hash;
   }
@@ -312,7 +302,6 @@ class DetherWeb3User {
    * @return {string} tsx hash - transaction is mined
    */
   async exchange({ sellToken, buyToken, sellAmount, buyAmount, gasPrice }, password) {
-
     if (!['kovan', 'mainnet', 'rinkeby'].includes(this.dether.network)) {
       throw new TypeError('only works on kovan, rinkeby and mainnet');
     }
