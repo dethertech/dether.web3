@@ -130,6 +130,8 @@ class DetherWeb3User {
   deleteShop = (opts, password) => this.deleteSellPoint(this.sellPoints.shop, opts)
   addTeller = (teller, password) => this.addSellPoint(teller, this.sellPoints.teller)
   deleteTeller = (opts, password) => this.deleteSellPoint(this.sellPoints.teller, opts)
+  getShopZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.shop);
+  getTellerZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.teller);
 
   addSellPoint(sellPointInst, sellPoint) {
     return new Promise(async (res, rej) => {
@@ -160,6 +162,30 @@ class DetherWeb3User {
         return res(txReceipt);
       } catch (e) {
         return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
+      }
+    });
+  }
+
+  /**
+   * Get zone price
+   * @param  {string} zoneId Zone id is a string of capitals characters
+   * @return {number}        Licence price
+   */
+  getZonePrice(zoneId, sellPoint) {
+    const sellPointMethods = {
+      shop: 'licenceShop',
+      teller: 'licenceTeller',
+    };
+    const methodName = sellPointMethods[sellPoint];
+    return new Promise(async (res, rej) => {
+      try {
+        const price = await this.dether._detherContract
+          .methods[methodName](`0x${toNBytes(zoneId, 2)}`)
+          .call();
+
+        return res(this.web3js.utils.fromWei(price));
+      } catch (e) {
+        return rej(e);
       }
     });
   }

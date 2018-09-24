@@ -86,13 +86,12 @@ class DetherWeb3 {
   // addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
   getShop = (address) => this.getSellPoint(this.sellPoints.shop, address);
   // deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
-  getShopZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.shop);
+
   isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
 
   // addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
   getTeller = (address) => this.getSellPoint(this.sellPoints.teller, address)
   // deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
-  getTellerZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.teller);
   isTellerZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.teller)
 
   /**
@@ -184,29 +183,7 @@ class DetherWeb3 {
     });
   }
 
-  /**
-   * Get zone price
-   * @param  {string} zoneId Zone id is a string of capitals characters
-   * @return {number}        Licence price
-   */
-  getZonePrice(zoneId, sellPoint) {
-    const sellPointMethods = {
-      shop: 'licenceShop',
-      teller: 'licenceTeller',
-    };
-    const methodName = sellPointMethods[sellPoint];
-    return new Promise(async (res, rej) => {
-      try {
-        const price = await this._detherContract
-          .methods[methodName](`0x${toNBytes(zoneId, 2)}`)
-          .call();
 
-        return res(this._web3js.utils.fromWei(price));
-      } catch (e) {
-        return rej(e);
-      }
-    });
-  }
 
   /**
    * Is zone open
