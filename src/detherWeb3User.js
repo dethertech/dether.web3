@@ -3,7 +3,7 @@
 import Web3 from 'web3'
 import web3Abi from 'web3-eth-abi';
 // import Ethers from 'ethers';
-import { TICKER, EXCHANGE_CONTRACTS, ALLOWED_EXCHANGE_PAIRS } from './constants/appConstants';
+import { TICKER, EXCHANGE_CONTRACTS, ALLOWED_EXCHANGE_PAIRS, NETWORK_NAME_ID } from './constants/appConstants';
 import { getDthContract, getErc20Contract, getSmsContract } from './contracts';
 import { add0x, getMaxUint256Value } from './utils/eth';
 import DthContract from 'dethercontract/contracts/DetherToken.json';
@@ -53,7 +53,8 @@ class DetherWeb3User {
     /** @ignore */
     this.dether = opts.dether;
     this.web3js = opts.dether.getWeb3();
-    this.networkId = opts.dether.getNetworkId();
+    this.network = opts.dether.getNetwork();
+    this.networkId = NETWORK_NAME_ID[this.network];
     /** @ignore */
     this.encryptedWallet = opts.encryptedWallet;
     const parsedWallet = JSON.parse(opts.encryptedWallet);
@@ -68,8 +69,8 @@ class DetherWeb3User {
    * @private
    * @ignore
    */
-  async _getWallet(password) {
-    return { address: this.address };
+  async _getWallet(password) { // TODO  - add 'sign' function?
+    return { address: this.address, network: this.network, networkId: this.networkId };
   }
 
   /**
@@ -159,7 +160,7 @@ class DetherWeb3User {
             gas: 400000,
           };
         const txReceipt = await sendTransaction(this.web3js, rawTx);
-        return res(txReceipt);
+        return res(txReceipt.transactionHash);
       } catch (e) {
         return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
       }
@@ -253,15 +254,10 @@ class DetherWeb3User {
 
   /**
    * Delete sell point, this function withdraw automatically balance escrow to owner and delete all info
-   * @param  {string} password  Wallet password
    * @param {number} opts.gasPrice  gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
    * @return {Promise<object>}  Transaction
    */
 
-    /**
-   * Delete shop from the smart contract
-   * @return {Object} transaction
-   */
   deleteSellPoint(sellPoint, opts) {
     const sellPointMethods = {
       shop: 'deleteShop',
@@ -270,9 +266,8 @@ class DetherWeb3User {
     const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
-        const tsx = await this.dether._detherContract
-          .methods[methodName]()
-          .send({
+        // const tsx = await this.dether._detherContract.methods[methodName]().send({
+        const tsx = await this.dether._detherContract.methods.deleteTeller().send({
             from: this.address,
             gas: 200000,
           });
@@ -459,13 +454,14 @@ class DetherWeb3User {
    * @return {Promise<object>}  Transaction hash
    */
   async addAirswapAllowance(opts, password) { // TODO
+
     const tokenContractAddress = TICKER[this.network][opts.ticker];
     const tokenContract = getErc20Contract(this.dether._web3js, tokenContractAddress);
-    const sentTsx = await tokenContract.methods.approve(
-      EXCHANGE_CONTRACTS[this.network]['airswapExchange'],
+    const txReceipt = await tokenContract.methods.approve(
+      EXCHANGE_CONTRACTS[this.network].airswapExchange,
        getMaxUint256Value(),
-       );
-    return sentTsx.hash;
+       ).send({ from: this.address, gas: '100000', gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000' });
+    return txReceipt.transactionHash;
     }
   }
 

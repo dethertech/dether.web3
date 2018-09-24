@@ -1,4 +1,5 @@
 import Ethers from 'ethers';
+import { NETWORK_NAME_ID } from '../constants/appConstants'
 
 /**
  * Test if addr is ethereum address
@@ -55,10 +56,10 @@ export const isEmptyObj = (myObj) => Object.keys(myObj).map(a => (parseInt(myObj
  * @param {Number} chainId - chainId
  * @return {String} the corresponding network name
  */
-// export const getNetworkName = chainId => {
-//   const networkName = Object.keys(Ethers.networks).find(networkName_ => Ethers.networks[networkName_].chainId === chainId); // eslint-disable-line max-len
-//   return networkName === 'homestead' ? 'mainnet' : networkName;
-// };
+export const getNetworkName = chainId => {
+  const networkName = Object.keys(NETWORK_NAME_ID).find(networkName_ => NETWORK_NAME_ID[networkName_] === chainId); // eslint-disable-line max-len
+  return networkName === 'homestead' ? 'mainnet' : networkName;
+};
 
 // /**
 //  * convert eth to wei as BigNumber (or any other token with 18 decimals)

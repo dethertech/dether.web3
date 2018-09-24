@@ -366,8 +366,7 @@ const setAllowanceIfNeeded = async (wallet, sellToken, gasPrice) => {
 export const exchangeTokens = ({ wallet, sellToken, sellAmount, buyToken, buyAmount, gasPrice }) => new Promise((resolve, reject) => { // eslint-disable-line
   const INDEXER_ADDRESS = '0x0000000000000000000000000000000000000000';
   const AIRSWAP_WS_TIMEOUT = 5000; // 5 seconds
-  // const networkName = getNetworkName(getChainId(wallet.provider));
-  const networkName = 'kovan'; //getNetworkName(getChainId(wallet.provider)); //TODO
+  const networkName = wallet.network;
   const WS_SERVER_URL = AIRSWAP_WEBSOCKET[networkName];
   if (!WS_SERVER_URL) {
     return reject(new Error(`did not find an airswap websocket url for network '${networkName}'`));

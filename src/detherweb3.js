@@ -8,7 +8,7 @@ import BigNumber from './utils/BigNumber';
 import * as ExternalContracts from './utils/externalContracts';
 import { getAddress } from './wallet';
 import { add0x, isEmptyObj, addEthersDec, isAddr, getMaxUint256Value } from './utils/eth';
-import { TICKER, ALLOWED_EXCHANGE_PAIRS } from './constants/appConstants';
+import { TICKER, ALLOWED_EXCHANGE_PAIRS, EXCHANGE_CONTRACTS } from './constants/appConstants';
 import { getRateEstimation } from './utils/exchangeTokens';
 
 import {
@@ -162,8 +162,8 @@ class DetherWeb3 {
     return this._web3js;
   }
 
-  getNetworkId() {
-    return this._networkId;
+  getNetwork() {
+    return this._network;
   }
   /**
    * is the user registered
@@ -433,8 +433,8 @@ async getTellerReputation(addr) {
     return res;
   }
 
-  async getEstimation({ sellToken, buyToken, sellAmount }) {  // TODO
-    if (!['kovan', 'mainnet', 'rinkeby'].includes(this.network)) {
+  async getEstimation({ sellToken, buyToken, sellAmount }) {
+    if (!['kovan', 'mainnet', 'rinkeby'].includes(this._network)) {
       throw new TypeError('only works on kovan, rinkeby and mainnet');
     }
     // check if pair is one of the accepted trading pairs
@@ -495,11 +495,11 @@ async getTellerReputation(addr) {
   }
 
   async hasAirswapAllowance({ ethAddress, ticker }) {
-    const tokenAddress = TICKER[this._network][ticker]
+    const tokenAddress = TICKER[this._network][ticker];
     const erc20Contract = getErc20Contract(this._web3js, tokenAddress);
-    const airswapAddress = ALLOWED_EXCHANGE_PAIRS[this._network]['airswapExchange'];
+    const airswapAddress = EXCHANGE_CONTRACTS[this._network].airswapExchange;
     const allowance = await erc20Contract.methods.allowance(ethAddress, airswapAddress).call();
-    return allowance.gt(getMaxUint256Value().div(2));
+    return allowance > (getMaxUint256Value() / 2);
   }
 
   // Getters

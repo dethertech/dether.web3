@@ -58,6 +58,13 @@ export const ALLOWED_EXCHANGE_PAIRS = [
   'ETH-REP',
 ];
 
+export const NETWORK_NAME_ID = {
+  mainnet: 1,
+  ropsten: 3,
+  rinkeby: 4,
+  kovan: 42,
+};
+
 export const AIRSWAP_WEBSOCKET = {
   rinkeby: 'wss://sandbox.airswap-api.com/websocket',
   mainnet: 'wss://connect.airswap-api.com/websocket',
