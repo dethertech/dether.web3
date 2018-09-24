@@ -1,4 +1,4 @@
-// import Ethers from 'ethers';
+import Ethers from 'ethers';
 
 /**
  * Test if addr is ethereum address
@@ -79,11 +79,11 @@ export const isEmptyObj = (myObj) => Object.keys(myObj).map(a => (parseInt(myObj
 //   Ethers.utils.keccak256(Ethers.utils.toUtf8Bytes(method)).substring(0, 10)
 // );
 
-// /**
-//  * return the max uint256 value, which is 2^256 - 1
-//  *
-//  * @return {BigNumber} max uint256 value as a BigNumber
-//  */
-// export const getMaxUint256Value = () => (
-//   Ethers.utils.bigNumberify(2).pow(256).sub(1)
-// );
+/**
+ * return the max uint256 value, which is 2^256 - 1
+ *
+ * @return {BigNumber} max uint256 value as a BigNumber
+ */
+export const getMaxUint256Value = () => (
+  Ethers.utils.bigNumberify(2).pow(256).sub(1)
+);

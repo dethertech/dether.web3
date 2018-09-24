@@ -6,12 +6,25 @@ import web3Abi from 'web3-eth-abi';
 import { TICKER, EXCHANGE_CONTRACTS, ALLOWED_EXCHANGE_PAIRS } from './constants/appConstants';
 import { getDthContract, getErc20Contract, getSmsContract } from './contracts';
 import { add0x, getMaxUint256Value } from './utils/eth';
+import DthContract from 'dethercontract/contracts/DetherToken.json';
+import DetherCore from 'dethercontract/contracts/DetherCore.json';
 // import { validateSellPoint, validateSendCoin, validatePassword } from './utils/validation';
 // import Contracts from './utils/contracts';
 import { updateToContract } from './utils/formatters';
 import { exchangeTokens } from './utils/exchangeTokens';
 import * as ExternalContracts from './utils/externalContracts';
-import sendTransaction from './utils/transaction';
+
+import {
+  toNBytes,
+  getOverLoadTransferAbi,
+  tellerFromContract,
+  sellPointFromContract,
+  sellPointToContract,
+  sendTransaction,
+  validateSellPoint,
+  reputFromContract,
+} from './utils';
+
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -39,6 +52,8 @@ class DetherWeb3User {
     }
     /** @ignore */
     this.dether = opts.dether;
+    this.web3js = opts.dether.getWeb3();
+    this.networkId = opts.dether.getNetworkId();
     /** @ignore */
     this.encryptedWallet = opts.encryptedWallet;
     const parsedWallet = JSON.parse(opts.encryptedWallet);
@@ -106,8 +121,47 @@ class DetherWeb3User {
    */
   // async addTeller(sellPoint, password) {
 
-  async addTeller(sellPoint, password) {
-    return this.dether.addTeller(sellPoint);
+  sellPoints = {
+    shop: 'shop',
+    teller: 'teller',
+  }
+
+  addShop = (shop, password) => this.addSellPoint(shop, this.sellPoints.shop)
+  deleteShop = (opts, password) => this.deleteSellPoint(this.sellPoints.shop, opts)
+  addTeller = (teller, password) => this.addSellPoint(teller, this.sellPoints.teller)
+  deleteTeller = (opts, password) => this.deleteSellPoint(this.sellPoints.teller, opts)
+
+  addSellPoint(sellPointInst, sellPoint) {
+    return new Promise(async (res, rej) => {
+      try {
+        await validateSellPoint(sellPointInst, sellPoint);
+        const licencePrice = await this.getZonePrice(sellPointInst.countryId, sellPoint);
+
+        if (!licencePrice) return rej(new Error('Invalid country ID'));
+
+        const overloadedTransferAbi = getOverLoadTransferAbi();
+        const hexSellPoint = sellPointToContract(sellPointInst, sellPoint);
+        const transferMethodTransactionData = web3Abi.encodeFunctionCall(
+          overloadedTransferAbi,
+          [
+            DetherCore.networks[this.networkId].address,
+            this.web3js.utils.toWei(licencePrice),
+            hexSellPoint,
+          ],
+        );
+        const rawTx = {
+            from: this.address,
+            to: DthContract.networks[this.networkId].address,
+            data: transferMethodTransactionData,
+            value: 0,
+            gas: 400000,
+          };
+        const txReceipt = await sendTransaction(this.web3js, rawTx);
+        return res(txReceipt);
+      } catch (e) {
+        return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
+      }
+    });
   }
 
   /**
@@ -123,7 +177,11 @@ class DetherWeb3User {
     const wallet = await this._getWallet(password);
     const detherCoreContract = this.dether._detherContract;
     const weiAmount = this.dether._web3js.utils.toWei(amount);
-    const transactionAddEth = await detherCoreContract.methods.addFunds().send({ from: this.address, value: weiAmount });
+    const transactionAddEth = await detherCoreContract.methods.addFunds().send({
+       from: this.address,
+        value: weiAmount,
+        gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
+        gasLimit: '110000', });
     return transactionAddEth.hash;
   }
 
@@ -138,7 +196,7 @@ class DetherWeb3User {
    * @param {number} opts.gasPrice (optional) gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
    */
    async updateTeller(opts, password) {
-    const weiAmount = this.dether._web3js.utils.toWei(amount.toString())
+    const weiAmount = this.dether._web3js.utils.toWei(opts.amount.toString());
     const detherCoreContract = this.dether._detherContract;
      const formatedUpdate = updateToContract(opts);
      const transaction = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate)).send({ from: this.address, value: weiAmount, gas: 1000000 });
@@ -159,12 +217,11 @@ class DetherWeb3User {
 
     const weiAmount = Web3.eth.utils.toWei(amount.toString());
     const detherCoreContract = this.dether._detherContract;
-    const address = this.address;
     const transaction = await detherCoreContract.methods
       .sellEth(
         add0x(receiver),
         weiAmount,
-      ).send({ address, gas: 1000000 });
+      ).send({ address: this.address, gas: 1000000 });
     return transaction.hash;
   }
 
@@ -174,8 +231,31 @@ class DetherWeb3User {
    * @param {number} opts.gasPrice  gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
    * @return {Promise<object>}  Transaction
    */
-  async deleteSellPoint(opts, password) {
-    return this.dether.deletTeller(this.address);
+
+    /**
+   * Delete shop from the smart contract
+   * @return {Object} transaction
+   */
+  deleteSellPoint(sellPoint, opts) {
+    const sellPointMethods = {
+      shop: 'deleteShop',
+      teller: 'deleteTeller',
+    };
+    const methodName = sellPointMethods[sellPoint];
+    return new Promise(async (res, rej) => {
+      try {
+        const tsx = await this.dether._detherContract
+          .methods[methodName]()
+          .send({
+            from: this.address,
+            gas: 200000,
+          });
+
+        return res(tsx);
+      } catch (e) {
+        return rej(new TypeError(`Invalid transaction: ${e.message}`));
+      }
+    });
   }
 
   /**
@@ -255,7 +335,7 @@ class DetherWeb3User {
         });
         return txReceipt.transactionHash;
       }
-        throw new Error('invalid sendToken request');
+        throw new TypeError('invalid sendToken request');
     }
 
   /**
@@ -302,7 +382,7 @@ class DetherWeb3User {
    * @return {string} tsx hash - transaction is mined
    */
   async exchange({ sellToken, buyToken, sellAmount, buyAmount, gasPrice }, password) {
-    if (!['kovan', 'mainnet', 'rinkeby'].includes(this.dether.network)) {
+    if (!['kovan', 'mainnet', 'rinkeby'].includes(this.dether._network)) {
       throw new TypeError('only works on kovan, rinkeby and mainnet');
     }
     // whitelist accepted trading pairs
@@ -356,11 +436,11 @@ class DetherWeb3User {
     const tokenContractAddress = TICKER[this.network][opts.ticker];
     const tokenContract = getErc20Contract(this.dether._web3js, tokenContractAddress);
     const sentTsx = await tokenContract.methods.approve(
-      ExternalContracts.getAirsSwapExchangeContractAddr(wallet.provider),
+      EXCHANGE_CONTRACTS[this.network]['airswapExchange'],
        getMaxUint256Value(),
        );
     return sentTsx.hash;
-  }
+    }
   }
 
 export default DetherWeb3User;

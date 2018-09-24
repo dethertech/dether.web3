@@ -7,8 +7,9 @@ import DetherWeb3User from './detherWeb3User';
 import BigNumber from './utils/BigNumber';
 import * as ExternalContracts from './utils/externalContracts';
 import { getAddress } from './wallet';
-import { add0x, isEmptyObj, addEthersDec, isAddr } from './utils/eth';
-import { TICKER } from './constants/appConstants';
+import { add0x, isEmptyObj, addEthersDec, isAddr, getMaxUint256Value } from './utils/eth';
+import { TICKER, ALLOWED_EXCHANGE_PAIRS } from './constants/appConstants';
+import { getRateEstimation } from './utils/exchangeTokens';
 
 import {
   toNBytes,
@@ -72,8 +73,6 @@ class DetherWeb3 {
       this._smsContract = getSmsContract(this._web3js, this._networkId);
       this._dthContract = getDthContract(this._web3js, this._networkId);
       this._detherContract = getDetherContract(this._web3js, this._networkId);
-
-      console.log('detherweb3 init complete: ', this._address);
     } catch (e) {
       throw new Error(e);
     }
@@ -84,15 +83,15 @@ class DetherWeb3 {
     teller: 'teller',
   }
 
-  addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
+  // addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
   getShop = (address) => this.getSellPoint(this.sellPoints.shop, address);
-  deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
+  // deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
   getShopZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.shop);
   isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
 
-  addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
+  // addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
   getTeller = (address) => this.getSellPoint(this.sellPoints.teller, address)
-  deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
+  // deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
   getTellerZonePrice = (zoneId) => this.getZonePrice(zoneId, this.sellPoints.teller);
   isTellerZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.teller)
 
@@ -114,8 +113,6 @@ class DetherWeb3 {
     );
   }
 
-  getInfo = () => this.getTeller();
-
   /**
    * Get instance of DetherUser linked to this Dether instance
    * @param  {object}  encryptedWallet Encrypted user wallet
@@ -133,10 +130,10 @@ class DetherWeb3 {
    * getBalance return eth and dth balances from eth address
    * @return {object} eth & dth balances
    */
-  getBalance() {
+  getBalance(address) {
     return new Promise(async (res, rej) => {
       try {
-        this._web3js.eth.getBalance(this._address)
+        this._web3js.eth.getBalance(address)
           .then(async (result, error) => {
             if (!error) {
               return res(
@@ -162,7 +159,13 @@ class DetherWeb3 {
     });
   }
 
+  getWeb3() {
+    return this._web3js;
+  }
 
+  getNetworkId() {
+    return this._networkId;
+  }
   /**
    * is the user registered
    * @return {Boolean} returns a boolean if the user is registered
@@ -228,6 +231,7 @@ class DetherWeb3 {
       }
     });
   }
+
   async getReput(address = this._address) {
     const rawReput = await this._detherContract.methods.getReput(address).call();
     const reput = reputFromContract(rawReput);
@@ -288,7 +292,8 @@ class DetherWeb3 {
 
   async getAllShops(addrs) {
     if (addrs && !Array.isArray(addrs)) throw new TypeError('Need array of addresses as parameter');
-    const result = addrs || await this.contractInstance.getAllShops();
+    // const result = addrs || await this.contractInstance.getAllShops();
+    const result = addrs;
     if (!result || !result.length) return [];
     const shopAddrList = result;
     const shops = await Promise.all(shopAddrList.map(this.getShop.bind(this)));
@@ -316,7 +321,7 @@ async getAllBalance(address, ticker) {
   const formatBalance = (weiBalance) => addEthersDec(this._web3js.utils.fromWei(weiBalance));
   const erc20Contract = (token) => getErc20Contract(this._web3js, TICKER[this._network][token]);
   const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH' && x !== 'AE');// TODO https://github.com/ethereum/web3.js/issues/1089 'AE' call
-
+  // "DTH DAI BNB MKR OMG ZRX AE REP HAV NUSD ZLA"
   const tokenBalancePromises = tokens.map(token => (erc20Contract(token)).methods.balanceOf(address).call());
   const dthBalancePromise = this._dthContract.methods.balanceOf(address).call();
   const ethBalancePromise = this._web3js.eth.getBalance(address);
@@ -339,7 +344,7 @@ async getAllBalance(address, ticker) {
  */
 async getTellerReputation(addr) {
   const rawTeller = await this._detherContract.methods.getTeller(addr).call();
-  const tellerFormatted = isEmptyObj(rawTeller) ? {messenger: ''} : await tellerFromContract(rawTeller);
+  const tellerFormatted = isEmptyObj(rawTeller) ? { messenger: '' } : await tellerFromContract(rawTeller);
   return Object.assign(
     {},
     await this.getReput(addr),
@@ -348,70 +353,6 @@ async getTellerReputation(addr) {
     },
   );
 }
-
-  /**
-   * Delete shop from the smart contract
-   * @return {Object} transaction
-   */
-  deleteSellPoint(sellPoint) {
-    const sellPointMethods = {
-      shop: 'deleteShop',
-      teller: 'deleteTeller',
-    };
-    const methodName = sellPointMethods[sellPoint];
-    return new Promise(async (res, rej) => {
-      try {
-        const tsx = await this._detherContract
-          .methods[methodName]()
-          .send({
-            from: this._address,
-            gas: 150000,
-          });
-
-        return res(tsx);
-      } catch (e) {
-        return rej(new TypeError(`Invalid transaction: ${e.message}`));
-      }
-    });
-  }
-
-  /**
-   * Add shop on the smart contract
-   * @param {object} shop Shop information
-   * @return {Object} transaction
-   */
-  addSellPoint(sellPointInst, sellPoint) {
-    return new Promise(async (res, rej) => {
-      try {
-        await validateSellPoint(sellPointInst, sellPoint);
-        const licencePrice = await this.getZonePrice(sellPointInst.countryId, sellPoint);
-
-        if (!licencePrice) return rej(new Error('Invalid country ID'));
-
-        const overloadedTransferAbi = getOverLoadTransferAbi();
-        const hexSellPoint = sellPointToContract(sellPointInst, sellPoint);
-        const transferMethodTransactionData = web3Abi.encodeFunctionCall(
-          overloadedTransferAbi,
-          [
-            DetherCore.networks[this._networkId].address,
-            this._web3js.utils.toWei(licencePrice),
-            hexSellPoint,
-          ],
-        );
-        const rawTx = {
-            from: this._address,
-            to: DthContract.networks[this._networkId].address,
-            data: transferMethodTransactionData,
-            value: 0,
-            gas: 400000,
-          };
-        const txReceipt = await sendTransaction(this._web3js, rawTx);
-        return res(txReceipt);
-      } catch (e) {
-        return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
-      }
-    });
-  }
 
   /**
    * get the price of the licence for the shop
@@ -491,7 +432,7 @@ async getTellerReputation(addr) {
     return new Promise(async (res, rej) => {
       try {
         if (hash === 'UNKNOWN') {
-          return res({ status: 'pending' });
+          return res({ status: 'unknow' });
         }
         const transaction = await this._web3js.eth.getTransactionReceipt(hash);
 
@@ -513,6 +454,32 @@ async getTellerReputation(addr) {
     const fullAddress = add0x(address);
     const res = await this._smsContract.methods.certified(fullAddress).call();
     return res;
+  }
+
+  async getEstimation({ sellToken, buyToken, sellAmount }) {  // TODO
+    if (!['kovan', 'mainnet', 'rinkeby'].includes(this.network)) {
+      throw new TypeError('only works on kovan, rinkeby and mainnet');
+    }
+    // check if pair is one of the accepted trading pairs
+    const acceptedPair = ALLOWED_EXCHANGE_PAIRS.some((pairStr) => {
+      const [sell, buy] = pairStr.split('-');
+      return (sell === sellToken && buy === buyToken)
+        || (sell === buyToken && buy === sellToken);
+    });
+    // console.log({ acceptedPair, sellToken, buyToken, ALLOWED_EXCHANGE_PAIRS });
+    if (!acceptedPair) {
+      throw new TypeError('Trading pair not implemented');
+    }
+    if (!sellAmount || typeof sellAmount !== 'number' || sellAmount < 0) {
+      throw new TypeError('sellAmount should be a positive number');
+    }
+    const buyAmount = await getRateEstimation({
+      sellToken,
+      buyToken,
+      sellAmount,
+    });
+
+    return buyAmount;
   }
 
   async availableSellAmount(address, unit = 'eth') { // eslint-disable-line
@@ -549,6 +516,15 @@ async getTellerReputation(addr) {
         break;
     }
   }
+
+  async hasAirswapAllowance({ ethAddress, ticker }) {
+    const tokenAddress = TICKER[this._network][ticker]
+    const erc20Contract = getErc20Contract(this._web3js, tokenAddress);
+    const airswapAddress = ALLOWED_EXCHANGE_PAIRS[this._network]['airswapExchange'];
+    const allowance = await erc20Contract.methods.allowance(ethAddress, airswapAddress).call();
+    return allowance.gt(getMaxUint256Value().div(2));
+  }
+
   // Getters
 
   /**
