@@ -443,7 +443,6 @@ async getTellerReputation(addr) {
       return (sell === sellToken && buy === buyToken)
         || (sell === buyToken && buy === sellToken);
     });
-    // console.log({ acceptedPair, sellToken, buyToken, ALLOWED_EXCHANGE_PAIRS });
     if (!acceptedPair) {
       throw new TypeError('Trading pair not implemented');
     }
@@ -478,13 +477,13 @@ async getTellerReputation(addr) {
 
     const weiSoldToday = await DetherBank.methods.getWeiSoldToday(address).call();
     const usdDailyLimit = await DetherCoreContract.methods.getSellDailyLimit(tier, Web3.utils.toHex(countryId)).call();
-    const weiPriceOneUsd = await DetherExchangeRateOracle.methods.getWeiPriceOneUsd().calL();
-    const weiDailyLimit = usdDailyLimit.mul(weiPriceOneUsd);
-    const weiLeftToSell = weiDailyLimit.sub(weiSoldToday);
+    const weiPriceOneUsd = await DetherExchangeRateOracle.methods.getWeiPriceOneUsd().call();
+    const weiDailyLimit = parseInt(usdDailyLimit) * parseInt(weiPriceOneUsd);
+    const weiLeftToSell = parseInt(weiDailyLimit) - parseInt(weiSoldToday);
 
     switch (unit) {
       case 'usd':
-        return weiLeftToSell.div(weiPriceOneUsd).toString();
+        return (weiLeftToSell / weiPriceOneUsd).toString();
       case 'eth':
         return Web3.utils.fromWei(weiLeftToSell);
       case 'wei':
