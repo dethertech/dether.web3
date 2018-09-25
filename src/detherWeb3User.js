@@ -70,7 +70,8 @@ class DetherWeb3User {
    * @ignore
    */
   async _getWallet(password) { // TODO  - add 'sign' function?
-    return { address: this.address, network: this.network, networkId: this.networkId };
+    const signMessage = msg => this.web3js.eth.sign(msg, this.address);
+    return { address: this.address, network: this.network, networkId: this.networkId, signMessage };
   }
 
   /**

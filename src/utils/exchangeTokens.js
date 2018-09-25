@@ -5,7 +5,7 @@ import Ethers from 'ethers';
 import BigNumber from 'bignumber.js';
 import xhr from 'xhr-request';
 
-import { AIRSWAP_WEBSOCKET, CRYPTOCOMPARE_URL } from '../constants/appConstants';
+import { AIRSWAP_WEBSOCKET, CRYPTOCOMPARE_URL, TICKER } from '../constants/appConstants';
 
 import {
   toWei,
@@ -389,8 +389,8 @@ export const exchangeTokens = ({ wallet, sellToken, sellAmount, buyToken, buyAmo
   let findIntentsCallId;
   let getOrderCallIds = [];
   const getOrderResults = [];
-  const sellTokenAddr = sellToken === 'ETH' ? ETH_ADDRESS : getTokenContractAddr(wallet.provider, sellToken);
-  const buyTokenAddr = getTokenContractAddr(wallet.provider, buyToken);
+  const sellTokenAddr = sellToken === 'ETH' ? ETH_ADDRESS : TICKER['mainnet'][sellToken]; //getTokenContractAddr(wallet.provider, sellToken); // TODO
+  const buyTokenAddr = TICKER['mainnet'][buyToken]; // getTokenContractAddr(wallet.provider, buyToken); // TODO
 
   // current state
   let state = AirswapStates.Start;
@@ -432,13 +432,16 @@ export const exchangeTokens = ({ wallet, sellToken, sellAmount, buyToken, buyAmo
 
         case AirswapStates.RcvChallenge: {
           console.log('<<< rcvd auth challenge');
-          client.send(wallet.signMessage(msg));
+          const msgCode = msg.split('AirSwap trading network. ').pop();
+          wallet.signMessage(msgCode).then(signedMsg => {
+            client.send(signedMsg);
           currentTimeout = setTimeout(() => {
             client.close();
             resolve();
           }, AIRSWAP_WS_TIMEOUT);
           console.log('>>> sent auth challenge solution');
           state = AirswapStates.RcvChallengeOk;
+          });
           break;
         }
 
@@ -455,7 +458,6 @@ export const exchangeTokens = ({ wallet, sellToken, sellAmount, buyToken, buyAmo
           console.log('\n\n\nfindIntents payload', JSON.stringify(data, null, 4), '\n');
           findIntentsCallId = data.message.id;
           state = AirswapStates.RcvFindIntentsRes;
-
           client.send(preparePayload(data));
           currentTimeout = setTimeout(() => {
             client.close();
