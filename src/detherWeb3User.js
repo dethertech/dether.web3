@@ -17,6 +17,8 @@ import * as ExternalContracts from './utils/externalContracts';
 import {
   toNBytes,
   getOverLoadTransferAbi,
+  getDeleteTellerAbi,
+  getDeleteShopAbi,
   tellerFromContract,
   sellPointFromContract,
   sellPointToContract,
@@ -267,27 +269,27 @@ class DetherWeb3User {
    */
 
   deleteSellPoint(opts, password, sellPoint = 'teller') {
-    const sellPointMethods = {
-      shop: 'deleteShop',
-      teller: 'deleteTeller',
-    };
-    const methodName = sellPointMethods[sellPoint];
+    const isTeller = sellPoint === 'teller';
     return new Promise(async (res, rej) => {
       try {
-        // const txReceipt = await this.dether._detherContract.methods[methodName]().send({ // TODO: removed await as not returning
-        const txProm = this.dether._detherContract.methods[methodName]().send({ // TODO: removed await as not returning
-            from: this.address,
-            gas: 400000, // TODO: doubled to equal addSellPoint
-            gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
-          });
-          txProm.then(txReceipt => console.log('NO AWAIT delete sell point tx receipt is : ', txReceipt));
-        return res('0x30caac89d8dff50f8c097106cd3149ef4127b3bff056ca73f6650509d5da7b64'); // TODO - successful tx with await BUT never returns txReceipt - use rawTx?
-        // return res(txReceipt.transactionHash);
+          const deleteSellPointAbi = isTeller ? getDeleteTellerAbi() : getDeleteShopAbi();
+          const deleteSellPointCallEncoded = web3Abi.encodeFunctionCall(deleteSellPointAbi, []);
+          const rawTx = {
+              from: this.address,
+              to: DetherCore.networks[this.networkId].address,
+              data: deleteSellPointCallEncoded,
+              value: 0,
+              gas: 400000,
+              gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
+            };
+          const txReceipt = await sendTransaction(this.web3js, rawTx);
+        return res(txReceipt.transactionHash);
       } catch (e) {
         return rej(new TypeError(`Invalid transaction: ${e.message}`));
       }
     });
   }
+
 
   /**
    * Delete sell point, this function withdraw automatically balance escrow to owner and delete all info

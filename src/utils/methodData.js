@@ -1,4 +1,5 @@
 import DetherToken from 'dethercontract/contracts/DetherToken.json';
+import DetherCore from 'dethercontract/contracts/DetherCore.json';
 
 const getMethodAbi = (contract, name, nInputs) => {
   const contractAbi = contract['abi']
@@ -14,5 +15,7 @@ const getMethodAbi = (contract, name, nInputs) => {
 };
 
 const getOverLoadTransferAbi = () => getMethodAbi(DetherToken, 'transfer', 3);
+const getDeleteTellerAbi = () => getMethodAbi(DetherCore, 'deleteTeller', 0);
+const getDeleteShopAbi = () => getMethodAbi(DetherCore, 'deleteShop', 0);
 
-module.exports = { getMethodAbi, getOverLoadTransferAbi };
+module.exports = { getMethodAbi, getOverLoadTransferAbi, getDeleteTellerAbi, getDeleteShopAbi };
