@@ -162,7 +162,7 @@ class DetherWeb3User {
           };
         const txReceiptAdd = await sendTransaction(this.web3js, rawTx);
         const txHashAddEth = await this.addEth({ amount: sellPointInst.amount });
-        return res(txHashAddEth);
+        return res(txReceiptAdd.transactionHash);
       } catch (e) {
         return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
       }
