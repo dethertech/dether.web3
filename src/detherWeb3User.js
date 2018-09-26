@@ -140,7 +140,6 @@ class DetherWeb3User {
       try {
         await validateSellPoint(sellPointInst, sellPoint);
         const licencePrice = await this.getZonePrice(sellPointInst.countryId, sellPoint);
-
         if (!licencePrice) return rej(new Error('Invalid country ID'));
 
         const overloadedTransferAbi = getOverLoadTransferAbi();
@@ -161,8 +160,9 @@ class DetherWeb3User {
             gas: 400000,
             gasPrice: sellPointInst.gasPrice ? sellPointInst.gasPrice : '20000000000',
           };
-        const txReceipt = await sendTransaction(this.web3js, rawTx);
-        return res(txReceipt.transactionHash);
+        const txReceiptAdd = await sendTransaction(this.web3js, rawTx);
+        const txHashAddEth = await this.addEth({ amount: sellPointInst.amount });
+        return res(txHashAddEth);
       } catch (e) {
         return rej(new TypeError(`Invalid add ${sellPoint} transaction: ${e.message}`));
       }
@@ -210,7 +210,7 @@ class DetherWeb3User {
        from: this.address,
         value: weiAmount,
         gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
-        gasLimit: '110000', });
+        gasLimit: '110000' });
     return transactionAddEth.hash;
   }
 
@@ -228,7 +228,13 @@ class DetherWeb3User {
     const weiAmount = this.dether._web3js.utils.toWei(opts.amount.toString());
     const detherCoreContract = this.dether._detherContract;
      const formatedUpdate = updateToContract(opts);
-     const txReceipt = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate)).send({ from: this.address, value: weiAmount, gas: 1000000 });
+     const txReceipt = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate))
+     .send({
+       from: this.address,
+       value: weiAmount,
+       gas: 1000000,
+       gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
+      });
      return txReceipt.transactionHash;
    }
 
@@ -268,14 +274,14 @@ class DetherWeb3User {
     const methodName = sellPointMethods[sellPoint];
     return new Promise(async (res, rej) => {
       try {
-        const txReceiptProm = this.dether._detherContract.methods[methodName]().send({ // TODO: removed await as not returning
+        // const txReceipt = await this.dether._detherContract.methods[methodName]().send({ // TODO: removed await as not returning
+        const txProm = this.dether._detherContract.methods[methodName]().send({ // TODO: removed await as not returning
             from: this.address,
             gas: 400000, // TODO: doubled to equal addSellPoint
             gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
           });
-
-          txReceiptProm.then(txReceipt => console.log('NO AWAIT delete sell point tx receipt is : ', txReceipt));
-        return res('0xa60b19e9cdc8b45ba4470735c341a41a3c9946ae0e3c919fab40ce89b8bbba8a'); // TODO - successful tx with await BUT never returns txReceipt - use rawTx?
+          txProm.then(txReceipt => console.log('NO AWAIT delete sell point tx receipt is : ', txReceipt));
+        return res('0x30caac89d8dff50f8c097106cd3149ef4127b3bff056ca73f6650509d5da7b64'); // TODO - successful tx with await BUT never returns txReceipt - use rawTx?
         // return res(txReceipt.transactionHash);
       } catch (e) {
         return rej(new TypeError(`Invalid transaction: ${e.message}`));
