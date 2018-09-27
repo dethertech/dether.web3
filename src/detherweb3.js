@@ -1,24 +1,15 @@
 /* global window */
-import DthContract from 'dethercontract/contracts/DetherToken.json';
-import DetherCore from 'dethercontract/contracts/DetherCore.json';
-import web3Abi from 'web3-eth-abi';
 import Web3 from 'web3';
 import DetherWeb3User from './detherWeb3User';
 import BigNumber from './utils/BigNumber';
-import * as ExternalContracts from './utils/externalContracts';
-import { getAddress } from './wallet';
-import { add0x, isEmptyObj, addEthersDec, isAddr, getMaxUint256Value } from './utils/eth';
+import { add0x, isEmptyObj, addEthersDec, isAddr, isNumDec, getMaxUint256Value } from './utils/eth';
 import { TICKER, ALLOWED_EXCHANGE_PAIRS, EXCHANGE_CONTRACTS } from './constants/appConstants';
 import { getRateEstimation } from './utils/exchangeTokens';
 
 import {
   toNBytes,
-  getOverLoadTransferAbi,
   tellerFromContract,
   sellPointFromContract,
-  sellPointToContract,
-  sendTransaction,
-  validateSellPoint,
   reputFromContract,
 } from './utils';
 
@@ -135,20 +126,7 @@ class DetherWeb3 {
         this._web3js.eth.getBalance(address)
           .then(async (result, error) => {
             if (!error) {
-              return res(
-                // {
-                // eth: parseFloat(this._web3js.utils.fromWei(result, 'ether')),
-                // new BigNumber(parseFloat(this._web3js.utils.fromWei(result, 'ether'))),
-                new BigNumber(result),
-                // new BigNumber(this._web3js.utils.fromWei(result, 'ether')),
-                // TODO: error test
-                // dth: parseFloat(this._web3js.utils.fromWei(
-                //   await this._getDthContract
-                //   .methods.balanceOf(this._address).call(),
-                //   'ether',
-                // )),
-              // }
-              );
+              return res(new BigNumber(result));
             }
             return rej(new TypeError(`Invalid shop profile: ${error.message}`));
           });
@@ -182,8 +160,6 @@ class DetherWeb3 {
       }
     });
   }
-
-
 
   /**
    * Is zone open
@@ -228,7 +204,7 @@ class DetherWeb3 {
       try {
         const rawSellPoint = await this._detherContract.methods[methodName](address).call();
         const rawReput = await this._detherContract.methods.getReput(address).call();
-        const id = this._web3js.utils.hexToUtf8(rawSellPoint[2]).replace(/\0/g, '');
+        const id = Web3.utils.hexToUtf8(rawSellPoint[2]).replace(/\0/g, '');
 
         if (!id) return res(null);
         if (sellPoint === 'teller') {
@@ -282,7 +258,7 @@ class DetherWeb3 {
     if (!isAddr(address)) throw new TypeError('Invalid ETH address');
     const fullAddress = add0x(address);
     const result = await this._detherContract.methods.getTellerBalance(fullAddress).call();
-    return Number(this._web3js.utils.fromWei(result));
+    return Number(Web3.utils.fromWei(result));
   }
 
 
@@ -295,20 +271,27 @@ class DetherWeb3 {
 async getAllBalance(address, ticker) {
   if (!isAddr(address)) throw new TypeError('Invalid ETH address');
 
-  const formatBalance = (weiBalance) => addEthersDec(this._web3js.utils.fromWei(weiBalance));
+  const formatBalance = (weiBalance) => addEthersDec(Web3.utils.fromWei(weiBalance));
   const erc20Contract = (token) => getErc20Contract(this._web3js, TICKER[this._network][token]);
-  const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH' && x !== 'AE');// TODO https://github.com/ethereum/web3.js/issues/1089 'AE' call
-  // "DTH DAI BNB MKR OMG ZRX AE REP HAV NUSD ZLA"
+  const tokens = ticker.filter(x => x !== 'ETH' && x !== 'DTH');
+
   const tokenBalancePromises = tokens.map(token => (erc20Contract(token)).methods.balanceOf(address).call());
   const dthBalancePromise = this._dthContract.methods.balanceOf(address).call();
   const ethBalancePromise = this._web3js.eth.getBalance(address);
 
   tokenBalancePromises.push(dthBalancePromise, ethBalancePromise);
-  const weiBalances = await Promise.all(tokenBalancePromises);
+  const weiBalances = await Promise.all(tokenBalancePromises.map(p => p.catch(e => e))); // continue if error
+
   const balances = weiBalances.map(formatBalance);
   tokens.push('DTH', 'ETH');
+
+  // {token[0]: balance[0], token[1]: balance[1]...}
   const result = balances.reduce((acc, bal, index) => {
+    if (isNumDec(bal)) { // if bal is not error  // https://github.com/ethereum/web3.js/issues/1089
     acc[tokens[index].toString()] = bal;
+    } else {
+      console.log(`error result from balanceOf() token: ${tokens[index]}. Not including in results object`);
+    }
     return acc;
   }, {});
   return result;
@@ -337,8 +320,8 @@ async getTellerReputation(addr) {
    */
   async getLicenceShop(country) {
     // verif
-    const price = await this._detherContract.methods.licenceShop(this._web3js.utils.toHex(country)).call();
-    return addEthersDec(this._web3js.utils.fromWei(price.toString()));
+    const price = await this._detherContract.methods.licenceShop(Web3.utils.toHex(country)).call();
+    return addEthersDec(Web3.utils.fromWei(price.toString()));
   }
 
   /**
@@ -347,8 +330,8 @@ async getTellerReputation(addr) {
    */
   async getLicenceTeller(country) {
     // verif
-    const price = await this._detherContract.methods.licenceTeller(this._web3js.utils.toHex(country)).call();
-    return addEthersDec(this._web3js.utils.fromWei(price.toString()));
+    const price = await this._detherContract.methods.licenceTeller(Web3.utils.toHex(country)).call();
+    return addEthersDec(Web3.utils.fromWei(price.toString()));
   }
 
   /**
@@ -357,7 +340,7 @@ async getTellerReputation(addr) {
    * @return {Bool}
    */
   async isZoneShopOpen(country) {
-    const res = await this._detherContract.methods.openedCountryShop(this._web3js.utils.toHex(country)).call();
+    const res = await this._detherContract.methods.openedCountryShop(Web3.utils.toHex(country)).call();
     return res;
   }
 
@@ -367,7 +350,7 @@ async getTellerReputation(addr) {
    * @return {Bool}
    */
   async isZoneTellerOpen(country) {
-    const res = await this._detherContract.methods.openedCountryTeller(this._web3js.utils.toHex(country)).call();
+    const res = await this._detherContract.methods.openedCountryTeller(Web3.utils.toHex(country)).call();
     return res;
   }
 
@@ -414,7 +397,7 @@ async getTellerReputation(addr) {
         const transaction = await this._web3js.eth.getTransactionReceipt(hash);
 
         if (!transaction) res({ status: 'pending' });
-        else if (this._web3js.utils.toHex(transaction.status) === '0x01') res({ status: 'success' });
+        else if (Web3.utils.toHex(transaction.status) === '0x01') res({ status: 'success' });
         return res({ status: 'error' });
       } catch (e) {
         return rej(new Error(e));

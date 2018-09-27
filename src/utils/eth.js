@@ -8,6 +8,7 @@ import { NETWORK_NAME_ID } from '../constants/appConstants'
  */
 export const isAddr = addr => /^(0x)?[0-9a-f]{40}$/i.test(addr) || /^(0x)?[0-9a-f]{64}$/i.test(addr);
 
+export const isNumDec = strValue => /^\d*\.?\d*$/.test(strValue);
 /**
  * Return formated address ethereum
  * @param {string} input address ethereum

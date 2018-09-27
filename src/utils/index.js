@@ -7,5 +7,5 @@ export { default as getMethodAbi } from './methodData';
 export { default as validateSellPoint } from './validators';
 export { intTo5bytes, toNBytes, intTobytes, intTo2Bytes } from './intToBytes';
 export { sellPointToContract, sellPointFromContract, reputFromContract } from './formatters';
-export { getOverLoadTransferAbi, getDeleteTellerAbi, getDeleteShopAbi } from './methodData';
+export { getOverLoadTransferAbi, getDeleteTellerAbi, getDeleteShopAbi, getErc20TransferAbi, getDthTransferAbi } from './methodData';
 export { sendTransaction, getTransactionStatus } from './transaction';

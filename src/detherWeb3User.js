@@ -1,8 +1,7 @@
 /* eslint-disable max-len, no-multi-spaces, object-curly-newline, import/first */
 
-import Web3 from 'web3'
+import Web3 from 'web3';
 import web3Abi from 'web3-eth-abi';
-// import Ethers from 'ethers';
 import { TICKER, EXCHANGE_CONTRACTS, ALLOWED_EXCHANGE_PAIRS, NETWORK_NAME_ID } from './constants/appConstants';
 import { getDthContract, getErc20Contract, getSmsContract } from './contracts';
 import { add0x, getMaxUint256Value } from './utils/eth';
@@ -12,23 +11,18 @@ import DetherCore from 'dethercontract/contracts/DetherCore.json';
 // import Contracts from './utils/contracts';
 import { updateToContract } from './utils/formatters';
 import { exchangeTokens } from './utils/exchangeTokens';
-import * as ExternalContracts from './utils/externalContracts';
 
 import {
   toNBytes,
   getOverLoadTransferAbi,
+  getErc20TransferAbi,
   getDeleteTellerAbi,
   getDeleteShopAbi,
-  tellerFromContract,
-  sellPointFromContract,
+  getDthTransferAbi,
   sellPointToContract,
   sendTransaction,
   validateSellPoint,
-  reputFromContract,
 } from './utils';
-
-
-const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
 /**
  * @example
@@ -150,11 +144,12 @@ class DetherWeb3User {
           overloadedTransferAbi,
           [
             DetherCore.networks[this.networkId].address,
-            this.web3js.utils.toWei(licencePrice),
+            Web3.utils.toWei(licencePrice),
             hexSellPoint,
           ],
         );
-        const rawTx = {
+
+        const dataTx = {
             from: this.address,
             to: DthContract.networks[this.networkId].address,
             data: transferMethodTransactionData,
@@ -162,7 +157,7 @@ class DetherWeb3User {
             gas: 400000,
             gasPrice: sellPointInst.gasPrice ? sellPointInst.gasPrice : '20000000000',
           };
-        const txReceiptAdd = await sendTransaction(this.web3js, rawTx);
+        const txReceiptAdd = await sendTransaction(this.web3js, dataTx);
         const txHashAddEth = await this.addEth({ amount: sellPointInst.amount });
         return res(txReceiptAdd.transactionHash);
       } catch (e) {
@@ -188,7 +183,7 @@ class DetherWeb3User {
           .methods[methodName](`0x${toNBytes(zoneId, 2)}`)
           .call();
 
-        return res(this.web3js.utils.fromWei(price));
+        return res(Web3.utils.fromWei(price));
       } catch (e) {
         return rej(e);
       }
@@ -207,7 +202,7 @@ class DetherWeb3User {
     const { amount } = opts;
     const wallet = await this._getWallet(password);
     const detherCoreContract = this.dether._detherContract;
-    const weiAmount = this.dether._web3js.utils.toWei(amount);
+    const weiAmount = Web3.utils.toWei(amount);
     const transactionAddEth = await detherCoreContract.methods.addFunds().send({
        from: this.address,
         value: weiAmount,
@@ -227,7 +222,7 @@ class DetherWeb3User {
    * @param {number} opts.gasPrice (optional) gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
    */
    async updateTeller(opts, password) {
-    const weiAmount = this.dether._web3js.utils.toWei(opts.amount.toString());
+    const weiAmount = Web3.utils.toWei(opts.amount.toString());
     const detherCoreContract = this.dether._detherContract;
      const formatedUpdate = updateToContract(opts);
      const txReceipt = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate))
@@ -252,7 +247,7 @@ class DetherWeb3User {
   async sendToBuyer(opts, password) {
     const { amount, receiver } = opts;
 
-    const weiAmount = Web3.eth.utils.toWei(amount.toString());
+    const weiAmount = Web3.utils.toWei(amount.toString());
     const detherCoreContract = this.dether._detherContract;
     const txReceipt = await detherCoreContract.methods
       .sellEth(
@@ -274,7 +269,7 @@ class DetherWeb3User {
       try {
           const deleteSellPointAbi = isTeller ? getDeleteTellerAbi() : getDeleteShopAbi();
           const deleteSellPointCallEncoded = web3Abi.encodeFunctionCall(deleteSellPointAbi, []);
-          const rawTx = {
+          const dataTx = {
               from: this.address,
               to: DetherCore.networks[this.networkId].address,
               data: deleteSellPointCallEncoded,
@@ -282,7 +277,7 @@ class DetherWeb3User {
               gas: 400000,
               gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
             };
-          const txReceipt = await sendTransaction(this.web3js, rawTx);
+          const txReceipt = await sendTransaction(this.web3js, dataTx);
         return res(txReceipt.transactionHash);
       } catch (e) {
         return rej(new TypeError(`Invalid transaction: ${e.message}`));
@@ -338,38 +333,40 @@ class DetherWeb3User {
    * @return {Promise<object>}  Transaction
    */
    async sendToken(opts, password) {
-      if (opts.token === 'ETH') {
-        const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
-        const txReceipt = await this.dether._web3js.eth.sendTransaction({
-          from: this.address,
-          to: opts.receiverAddress,
-          value: weiAmount,
-          gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
-          gas: 100000,
-        });
-        return txReceipt.transactionHash;
-      } else if (opts.token === 'DTH') {
-        const dthContract = await getDthContract(this.dether._web3js, this.dether._networkId);
-        const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
-        const txReceipt = await dthContract.methods.transfer(opts.receiverAddress, weiAmount).send({
-          from: this.address,
-          gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
-          gas: 100000,
-        });
-        return txReceipt.transactionHash;
-      } else if (TICKER[this.dether.network][opts.token]) {
-        // it's not DTH token but another token
-        const erc20 = await getErc20Contract(this.dether._web3js, TICKER[this.dether.network][opts.token]);
-        const weiAmount = this.dether._web3js.utils.toWei(opts.amount);
-        const txReceipt = await erc20.methods.transfer(opts.receiverAddress, weiAmount).send({
-          from: this.address,
-          gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
-          gas: 100000,
-        });
-        return txReceipt.transactionHash;
-      }
-        throw new TypeError('invalid sendToken request');
-    }
+     const weiAmount = Web3.utils.toWei(opts.amount);
+     const CONFIRMATIONS = 0;
+     let txData;
+     // switch(opts.token)
+     if (opts.token === 'ETH') {
+       txData = {
+         from: this.address,
+         to: opts.receiverAddress,
+         value: weiAmount,
+         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
+         gas: 120000,
+       };
+     } else if (TICKER[this.network][opts.token]) {
+       const erc20TransferAbi = opts.token === 'DTH' ? getDthTransferAbi() : getErc20TransferAbi();
+       const erc20TransferCallEncoded = web3Abi.encodeFunctionCall(erc20TransferAbi, [opts.receiverAddress, weiAmount]);
+       txData = {
+         from: this.address,
+         to: TICKER[this.network][opts.token],
+         data: erc20TransferCallEncoded,
+         value: 0,
+         gas: 120000,
+         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
+       };
+     }
+     if (txData) {
+       try {
+         const txReceipt = await sendTransaction(this.web3js, txData, CONFIRMATIONS);
+         return txReceipt.transactionHash;
+       } catch (e) {
+         throw new TypeError(`sendTransaction failed for token ${opts.token}: ${e}`);
+       }
+     }
+     throw new TypeError('invalid sendToken request');
+   }
 
   /**
    * Certify New User, this function whitelist by sms new user, USER SHOULD BE SMS.DELEGATE
