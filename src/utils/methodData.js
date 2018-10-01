@@ -18,6 +18,15 @@ const getMethodAbi = (contract, name, nInputs) => {
 const getOverLoadTransferAbi = () => getMethodAbi(DetherToken, 'transfer', 3);
 const getDthTransferAbi = () => getMethodAbi(DetherToken, 'transfer', 2);
 const getDeleteTellerAbi = () => getMethodAbi(DetherCore, 'deleteTeller', 0);
+const getUpdateTellerAbi = () => getMethodAbi(DetherCore, 'updateTeller', 5);
 const getDeleteShopAbi = () => getMethodAbi(DetherCore, 'deleteShop', 0);
 const getErc20TransferAbi = () => getMethodAbi(erc20, 'transfer', 2);
-module.exports = { getMethodAbi, getOverLoadTransferAbi, getDeleteTellerAbi, getDeleteShopAbi, getErc20TransferAbi, getDthTransferAbi };
+module.exports = {
+  getMethodAbi,
+  getOverLoadTransferAbi,
+  getDeleteTellerAbi,
+  getDeleteShopAbi,
+  getErc20TransferAbi,
+  getDthTransferAbi,
+  getUpdateTellerAbi,
+};

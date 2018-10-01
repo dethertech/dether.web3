@@ -22,7 +22,7 @@ const validateTeller = (teller) =>
     if (!hasValue(teller.postalCode) || typeof teller.postalCode !== 'string' || teller.postalCode.length > 16) {
       return rej(new Error('Invalid postal code'));
     }
-    if (!hasValue(teller.avatarId) || parseInt(teller.avatarId) <= 0 || parseInt(teller.avatarId) >= 20) {
+    if (!hasValue(teller.avatarId) || parseInt(teller.avatarId) < 0 || parseInt(teller.avatarId) > 20) {
       return rej(new Error('Invalid avatar ID'));
     }
     if (!hasValue(teller.currencyId)) {

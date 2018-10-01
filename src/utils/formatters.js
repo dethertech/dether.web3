@@ -3,7 +3,7 @@ import shopFromContract from './shopFromContract';
 import shopToContract from './shopToContract';
 import tellerFromContract from './tellerFromContract';
 import tellerToContract from './tellerToContract';
-
+// import toNBytes from './intToBytes';
 
 const sellPoints = {
   shop: 'shop',
@@ -25,7 +25,6 @@ const sellPointFromContract = (rawSellPoint, sellPoint) => {
 };
 
 const addEthersDec = strNum => strNum.includes('.') ? strNum : strNum + '.0'; 
-// TODO: treating an object like an array here? - use string values? rewReput['buyVolume']
 
 const reputFromContract = (rawReput) => {
   try {
@@ -37,6 +36,17 @@ const reputFromContract = (rawReput) => {
   } catch (e) {
     throw new TypeError(`Invalid reput: ${e.message}`);
   }
+};
+
+const toNBytes = (str, n) => {
+  if (!str || !n) return 0;
+
+  let buffer = '';
+
+  for (let i = 0; i < n; i += 1) {
+    buffer += str[i] ? str[i].charCodeAt(0).toString(16) : '00';
+  }
+  return buffer;
 };
 
 const updateToContract = (rawUpdate) => {

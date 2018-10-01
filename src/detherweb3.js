@@ -35,13 +35,6 @@ class DetherWeb3 {
     const networks = { kovan: 42, mainnet: 1 };
     this._network = providerData.network;
     this._networkId = networks[providerData.network];
-    // if (providerData.address) {
-    //   this._address = providerData.address;
-    // }
-    // else {
-    //   console.log('WARNING: no address provided for non-asyn init')
-    // }
-
     this.init();
   }
 
@@ -74,15 +67,9 @@ class DetherWeb3 {
     teller: 'teller',
   }
 
-  // addShop = (shop) => this.addSellPoint(shop, this.sellPoints.shop)
   getShop = (address) => this.getSellPoint(this.sellPoints.shop, address);
-  // deleteShop = () => this.deleteSellPoint(this.sellPoints.shop)
-
-  isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
-
-  // addTeller = (teller) => this.addSellPoint(teller, this.sellPoints.teller)
   getTeller = (address) => this.getSellPoint(this.sellPoints.teller, address)
-  // deleteTeller = () => this.deleteSellPoint(this.sellPoints.teller)
+  isShopZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.shop)
   isTellerZoneOpen = (zoneId) => this.isZoneOpen(zoneId, this.sellPoints.teller)
 
   /**

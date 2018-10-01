@@ -17,6 +17,7 @@ import {
   getOverLoadTransferAbi,
   getErc20TransferAbi,
   getDeleteTellerAbi,
+  getUpdateTellerAbi,
   getDeleteShopAbi,
   getDthTransferAbi,
   sellPointToContract,
@@ -24,20 +25,12 @@ import {
   validateSellPoint,
 } from './utils';
 
-/**
- * @example
- * import DetherJS from 'dether.js';
- *
- * const wallet = DetherJS.Ethers.Wallet.createRandom();
- * const encryptedWallet = await wallet.encrypt('password');
- *
- * const User = dether.getUser(encryptedWallet);
- */
+
 class DetherWeb3User {
   /**
-   * Creates an instance of DetherUser.
+   * Creates an instance of DetherWeb3User.
    *
-   * You may not instanciate from here, prefer from DetherJS.getUser method
+   * You may not instanciate from here, prefer from DetherWeb3.getUser method
    *
    * @param {object} opts
    * @param {string} opts.encryptedWallet user wallet
@@ -65,7 +58,7 @@ class DetherWeb3User {
    * @private
    * @ignore
    */
-  async _getWallet(password) { // TODO  - add 'sign' function?
+  async _getWallet(password) {
     const signMessage = msg => this.web3js.eth.sign(msg, this.address);
     return { address: this.address, network: this.network, networkId: this.networkId, signMessage };
   }
@@ -167,6 +160,66 @@ class DetherWeb3User {
   }
 
   /**
+   * Delete sell point, this function withdraw automatically balance escrow to owner and delete all info
+   * @param {number} opts.gasPrice  gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
+   * @return {Promise<object>}  Transaction
+   */
+
+  deleteSellPoint(opts, password, sellPoint = 'teller') {
+    const isTeller = sellPoint === 'teller';
+    return new Promise(async (res, rej) => {
+      try {
+          const deleteSellPointAbi = isTeller ? getDeleteTellerAbi() : getDeleteShopAbi();
+          const deleteSellPointCallEncoded = web3Abi.encodeFunctionCall(deleteSellPointAbi, []);
+          const dataTx = {
+              from: this.address,
+              to: DetherCore.networks[this.networkId].address,
+              data: deleteSellPointCallEncoded,
+              value: 0,
+              gas: 400000,
+              gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
+            };
+          const txReceipt = await sendTransaction(this.web3js, dataTx);
+        return res(txReceipt.transactionHash);
+      } catch (e) {
+        return rej(new TypeError(`Invalid transaction: ${e.message}`));
+      }
+    });
+  }
+
+  /**
+   * Update Teller
+   * @param {object} opts
+   * @param {int} opts.currencyId
+   * @param {string} opts.messenger
+   * @param {int} opts.avatarId
+   * @param {int} opts.rates
+   * @param {float} opts.amount
+   * @param {number} opts.gasPrice (optional) gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
+   */
+  async updateTeller(opts, password) {
+    try {
+    const updateTellerAbi = getUpdateTellerAbi();
+    const weiAmount = Web3.utils.toWei(opts.amount.toString());
+     const formatedUpdate = updateToContract(opts);
+     const updateArgs = Object.values(formatedUpdate);
+     const updateTellerAbiCallEncoded = web3Abi.encodeFunctionCall(updateTellerAbi, updateArgs);
+     const dataTx = {
+      from: this.address,
+      to: DetherCore.networks[this.networkId].address,
+      data: updateTellerAbiCallEncoded,
+      value: weiAmount,
+      gas: 400000,
+      gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
+    };
+    const txReceipt = await sendTransaction(this.web3js, dataTx);
+     return txReceipt.transactionHash;
+    } catch (e) {
+       throw new TypeError('invalid update teller transaction: ', e)
+     }
+   }
+
+  /**
    * Get zone price
    * @param  {string} zoneId Zone id is a string of capitals characters
    * @return {number}        Licence price
@@ -212,30 +265,6 @@ class DetherWeb3User {
   }
 
   /**
-   * Update Teller
-   * @param {object} opts
-   * @param {int} opts.currencyId
-   * @param {string} opts.messenger
-   * @param {int} opts.avatarId
-   * @param {int} opts.rates
-   * @param {float} opts.amount
-   * @param {number} opts.gasPrice (optional) gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
-   */
-   async updateTeller(opts, password) {
-    const weiAmount = Web3.utils.toWei(opts.amount.toString());
-    const detherCoreContract = this.dether._detherContract;
-     const formatedUpdate = updateToContract(opts);
-     const txReceipt = await detherCoreContract.methods.updateTeller(...Object.values(formatedUpdate))
-     .send({
-       from: this.address,
-       value: weiAmount,
-       gas: 1000000,
-       gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
-      });
-     return txReceipt.transactionHash;
-   }
-
-  /**
    * Send eth from teller escrow
    * @param  {object}  opts
    * @param  {string}  opts.receiver Receiver ethereum address
@@ -253,36 +282,8 @@ class DetherWeb3User {
       .sellEth(
         add0x(receiver),
         weiAmount,
-      ).send({ address: this.address, gas: 1000000 });
+      ).send({ from: this.address, gas: 1000000 });
     return txReceipt.transactionHash;
-  }
-
-  /**
-   * Delete sell point, this function withdraw automatically balance escrow to owner and delete all info
-   * @param {number} opts.gasPrice  gasprice you want to use in the tsx in WEI ex: 20000000000 for 20 GWEI
-   * @return {Promise<object>}  Transaction
-   */
-
-  deleteSellPoint(opts, password, sellPoint = 'teller') {
-    const isTeller = sellPoint === 'teller';
-    return new Promise(async (res, rej) => {
-      try {
-          const deleteSellPointAbi = isTeller ? getDeleteTellerAbi() : getDeleteShopAbi();
-          const deleteSellPointCallEncoded = web3Abi.encodeFunctionCall(deleteSellPointAbi, []);
-          const dataTx = {
-              from: this.address,
-              to: DetherCore.networks[this.networkId].address,
-              data: deleteSellPointCallEncoded,
-              value: 0,
-              gas: 400000,
-              gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
-            };
-          const txReceipt = await sendTransaction(this.web3js, dataTx);
-        return res(txReceipt.transactionHash);
-      } catch (e) {
-        return rej(new TypeError(`Invalid transaction: ${e.message}`));
-      }
-    });
   }
 
 
