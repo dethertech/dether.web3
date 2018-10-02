@@ -47,6 +47,9 @@ class DetherWeb3User {
     /** @ignore */
     this.encryptedWallet = opts.encryptedWallet;
     const parsedWallet = JSON.parse(opts.encryptedWallet);
+    if (!parsedWallet.address) {
+      throw new TypeError('dether web3 user wallet must contains address');
+    }
     this.address = add0x(parsedWallet.address);
   }
 
@@ -253,7 +256,7 @@ class DetherWeb3User {
    */
   async addEth(opts, password) {
     const { amount } = opts;
-    const wallet = await this._getWallet(password);
+    try {
     const detherCoreContract = this.dether._detherContract;
     const weiAmount = Web3.utils.toWei(amount);
     const transactionAddEth = await detherCoreContract.methods.addFunds().send({
@@ -262,6 +265,9 @@ class DetherWeb3User {
         gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
         gasLimit: '110000' });
     return transactionAddEth.hash;
+    } catch (e) {
+      throw new TypeError('Invalid add eth transaction', e);
+    }
   }
 
   /**
@@ -380,7 +386,20 @@ class DetherWeb3User {
    */
   async certifyNewUser(opts, password) {
     const smsContract = await getSmsContract(this.dether._web3js, this.dether._networkId);
-    const txReceipt = await smsContract.methods.certify(opts.user).send({ from: this.address, gas: 1000000 });
+    const txReceipt = await smsContract.methods.certify(opts.user).send({ from: this.address, gas: 1000000 })
+    // .on('receipt', (() => {
+    //   console.log('Awaiting confirmations...');
+    // }))
+    // .on('confirmation', ((confirmationNumber, receipt) => {
+    //   if (confirmationNumber === 0) {
+    //     if (this.web3js.utils.toHex(receipt.status) === '0x01') {
+    //       console.log('Transaction confirmed. Status: success');
+    //       return receipt;
+    //     }
+    //     console.log(`Error. Transaction status: ${this.web3js.utils.toHex(receipt.status)}`);
+    //     return new Error(receipt);
+    //    }
+    // }));
     // // const minedTsx = await this.dether.provider.waitForTransaction(transaction.hash);
     return txReceipt.transactionHash;
   }

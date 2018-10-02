@@ -50,8 +50,9 @@ class DetherWeb3 {
 
       // this._address = await getAddress(this._web3js) || null;
       this._address = window.web3.eth.defaultAccount; // synchronous
-      this._address = this._address.toLowerCase();
-
+      if (this._address) {
+        this._address = this._address.toLowerCase();
+      }
       // this._networkId = await this._web3js.eth.net.getId();
 
       this._smsContract = getSmsContract(this._web3js, this._networkId);
@@ -172,7 +173,7 @@ class DetherWeb3 {
     });
   }
 
-  async getReput(address = this._address) {
+  async getReput(address) {
     const rawReput = await this._detherContract.methods.getReput(address).call();
     const reput = reputFromContract(rawReput);
     return reput;
