@@ -206,7 +206,6 @@ class DetherWeb3User {
       const weiAmount = Web3.utils.toWei(opts.amount.toString());
       const formatedUpdate = updateToContract(opts);
       const updateArgs = Object.values(formatedUpdate);
-      console.log('EAMON confirm that args length is 5?', updateArgs.length);
       const updateTellerAbiCallEncoded = web3Abi.encodeFunctionCall(updateTellerAbi, updateArgs);
       const dataTx = {
         from: this.address,
