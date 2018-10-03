@@ -152,7 +152,7 @@ class DetherWeb3User {
             gas: 400000,
             gasPrice: sellPointInst.gasPrice ? sellPointInst.gasPrice : '20000000000',
           };
-        const txReceiptAdd = await sendTransaction(this.web3js, dataTx, false);
+        const txReceiptAdd = await sendTransaction(this.web3js, dataTx, 1, false);
         const txHashAddEth = await this.addEth({ amount: sellPointInst.amount });
         return res(txReceiptAdd.transactionHash);
       } catch (e) {
