@@ -152,7 +152,7 @@ class DetherWeb3User {
             gas: 400000,
             gasPrice: sellPointInst.gasPrice ? sellPointInst.gasPrice : '20000000000',
           };
-        const txReceiptAdd = await sendTransaction(this.web3js, dataTx);
+        const txReceiptAdd = await sendTransaction(this.web3js, dataTx, false);
         const txHashAddEth = await this.addEth({ amount: sellPointInst.amount });
         return res(txReceiptAdd.transactionHash);
       } catch (e) {
@@ -182,8 +182,8 @@ class DetherWeb3User {
               gas: 400000,
               gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
             };
-          const txReceipt = await sendTransaction(this.web3js, dataTx);
-        return res(txReceipt.transactionHash);
+          const transactionHash = await sendTransaction(this.web3js, dataTx);
+        return res(transactionHash);
       } catch (e) {
         return rej(new TypeError(`Invalid transaction: ${e.message}`));
       }
@@ -215,8 +215,8 @@ class DetherWeb3User {
         gas: 400000,
         gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
       };
-      const txReceipt = await sendTransaction(this.web3js, dataTx);
-      return txReceipt.transactionHash;
+      const transactionHash = await sendTransaction(this.web3js, dataTx);
+      return transactionHash;
     } catch (e) {
        throw new TypeError('invalid update teller transaction: ', e);
      }
@@ -295,8 +295,9 @@ class DetherWeb3User {
         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
       };
 
-      const txReceipt = await sendTransaction(this.web3js, txData, 0);
-      return txReceipt.transactionHash;
+      // const txReceipt = await sendTransaction(this.web3js, txData, 0);
+      const transactionHash = await sendTransaction(this.web3js, txData, 0);
+      return transactionHash;
     } catch (e) {
       throw new TypeError('Invalid send to buyer transaction', e);
     }
@@ -356,8 +357,8 @@ class DetherWeb3User {
         gas: 200000,
         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
       };
-      const txReceipt = await sendTransaction(this.web3js, txData, 0);
-      return txReceipt.transactionHash;
+      const transactionHash = await sendTransaction(this.web3js, txData, 0);
+      return transactionHash;
     } catch (e) {
       throw new TypeError('Invalid turn offline sell point transaction', e);
     }
@@ -402,8 +403,8 @@ class DetherWeb3User {
      }
      if (txData) {
        try {
-         const txReceipt = await sendTransaction(this.web3js, txData, CONFIRMATIONS);
-         return txReceipt.transactionHash;
+         const transactionHash = await sendTransaction(this.web3js, txData, CONFIRMATIONS);
+         return transactionHash;
        } catch (e) {
          throw new TypeError(`sendTransaction failed for token ${opts.token}: ${e}`);
        }
@@ -433,8 +434,8 @@ class DetherWeb3User {
         gas: 120000,
         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
       };
-      const txReceipt = await sendTransaction(this.web3js, txData, 0);
-      return txReceipt.transactionHash;
+      const transactionHash = await sendTransaction(this.web3js, txData, 0);
+      return transactionHash;
     } catch (e) {
       throw new TypeError('Invalid certify new user transaction', e);
     }
@@ -462,8 +463,8 @@ class DetherWeb3User {
         gas: 1000000,
         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
       };
-      const txReceipt = await sendTransaction(this.web3js, txData, 0);
-      return txReceipt.transactionHash;
+      const transactionHash = await sendTransaction(this.web3js, txData, 0);
+      return transactionHash;
     } catch (e) {
       throw new TypeError('Invalid revoke user transaction', e);
     }

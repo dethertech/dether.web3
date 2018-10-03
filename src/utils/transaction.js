@@ -5,16 +5,20 @@
    * @param {number} confirmationsRequired optional
    * @return {Object} receipt
    */
-   const sendTransaction = (web3js, tx, confirmationsRequired = 1) =>
+   const sendTransaction = (web3js, tx, confirmationsRequired = 1, justHash = true) =>
     new Promise(async (res, rej) => {
       web3js.eth.sendTransaction(tx)
         .on('transactionHash', (hash => {
+          if (justHash) {
+            return res(hash);
+          }
           console.log(`Transaction hash:  ${hash}`);
         }))
         .on('receipt', (() => {
           console.log('Awaiting confirmations...');
         }))
         .on('confirmation', ((confirmationNumber, receipt) => {
+          if (!justHash) {
           if (confirmationNumber === confirmationsRequired) {
             if (web3js.utils.toHex(receipt.status) === '0x01') {
               console.log('Transaction confirmed. Status: success');
@@ -23,6 +27,7 @@
             console.log(`Error. Transaction status: ${web3js.utils.toHex(receipt.status)}`);
             return rej(receipt);
            }
+          }
         }))
         .on('error', (error => {
           rej(error);
