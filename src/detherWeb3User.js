@@ -171,8 +171,9 @@ class DetherWeb3User {
     const isTeller = sellPoint === 'teller';
     return new Promise(async (res, rej) => {
       try {
-          const deleteSellPointAbi = isTeller ? getDetherCoreMethodAbi('deleteTeller', 0) : getDetherCoreMethodAbi('deleteShop', 0);
-          const deleteSellPointCallEncoded = web3Abi.encodeFunctionCall(deleteSellPointAbi, []);
+          const methodArgs = [];
+          const deleteSellPointAbi = isTeller ? getDetherCoreMethodAbi('deleteTeller', methodArgs.length) : getDetherCoreMethodAbi('deleteShop', methodArgs.length);
+          const deleteSellPointCallEncoded = web3Abi.encodeFunctionCall(deleteSellPointAbi, methodArgs);
           const dataTx = {
               from: this.address,
               to: DetherCore.networks[this.networkId].address,
@@ -205,6 +206,7 @@ class DetherWeb3User {
       const weiAmount = Web3.utils.toWei(opts.amount.toString());
       const formatedUpdate = updateToContract(opts);
       const updateArgs = Object.values(formatedUpdate);
+      console.log('EAMON confirm that args length is 5?', updateArgs.length);
       const updateTellerAbiCallEncoded = web3Abi.encodeFunctionCall(updateTellerAbi, updateArgs);
       const dataTx = {
         from: this.address,
@@ -262,7 +264,7 @@ class DetherWeb3User {
         from: this.address,
           value: weiAmount,
           gasPrice: opts.gasPrice ? opts.gasPrice : '20000000000',
-          gas: '110000' });
+          gas: '210000' });
       return transactionAddEth.hash;
     } catch (e) {
       throw new TypeError('Invalid add eth transaction', e);
@@ -282,14 +284,15 @@ class DetherWeb3User {
     try {
       const { amount, receiver } = opts;
       const weiAmount = Web3.utils.toWei(amount.toString());
-      const sellEthAbi = getDetherCoreMethodAbi('sellEth', 2);
-      const sellEthCallEncoded = web3Abi.encodeFunctionCall(sellEthAbi, [receiver, weiAmount]);
+      const methodArgs = [receiver, weiAmount];
+      const sellEthAbi = getDetherCoreMethodAbi('sellEth', methodArgs.length);
+      const sellEthCallEncoded = web3Abi.encodeFunctionCall(sellEthAbi, methodArgs);
       const txData = {
         from: this.address,
         to: DetherCore.networks[this.networkId].address,
         data: sellEthCallEncoded,
         value: 0,
-        gas: 200000,
+        gas: 300000,
         gasPrice: opts.gasPrice ? opts.gasPrice : '12000000000',
       };
 
@@ -313,8 +316,9 @@ class DetherWeb3User {
    */
   async deleteSellPointModerator(opts, password) {
     try {
-      const deleteTellerModsMethodAbi = getDetherCoreMethodAbi('deleteTellerMods', 1);
-      const deleteTellerModsCallEncoded = web3Abi.encodeFunctionCall(deleteTellerModsMethodAbi, []);
+      const methodArgs = [opts.toDelete];
+      const deleteTellerModsMethodAbi = getDetherCoreMethodAbi('deleteTellerMods', methodArgs.length);
+      const deleteTellerModsCallEncoded = web3Abi.encodeFunctionCall(deleteTellerModsMethodAbi, methodArgs);
       const txData = {
         from: this.address,
         to: DetherCore[this.networkId].address,
@@ -342,8 +346,9 @@ class DetherWeb3User {
    */
   async turnOfflineSellPoint(opts, password) {
     try {
-      const switchStatusMethodAbi = getDetherCoreMethodAbi('switchStatus', 1);
-      const switchStatusCallEncoded = web3Abi.encodeFunctionCall(switchStatusMethodAbi, [false]);
+      const methodArgs = [false];
+      const switchStatusMethodAbi = getDetherCoreMethodAbi('switchStatus', methodArgs.length);
+      const switchStatusCallEncoded = web3Abi.encodeFunctionCall(switchStatusMethodAbi, methodArgs);
       const txData = {
         from: this.address,
         to: DetherCore[this.networkId].address,
@@ -384,8 +389,9 @@ class DetherWeb3User {
          gas: 120000,
        };
      } else if (TICKER[this.network][opts.token]) {
-       const erc20TransferAbi = opts.token === 'DTH' ? getDetherTokenMethodAbi('transfer', 2) : getErc20MethodAbi('transfer', 2);
-       const erc20TransferCallEncoded = web3Abi.encodeFunctionCall(erc20TransferAbi, [opts.receiverAddress, weiAmount]);
+       const methodArgs = [opts.receiverAddress, weiAmount];
+       const erc20TransferAbi = opts.token === 'DTH' ? getDetherTokenMethodAbi('transfer', methodArgs.length) : getErc20MethodAbi('transfer', methodArgs.length);
+       const erc20TransferCallEncoded = web3Abi.encodeFunctionCall(erc20TransferAbi, methodArgs);
        txData = {
          from: this.address,
          to: TICKER[this.network][opts.token],
@@ -417,8 +423,9 @@ class DetherWeb3User {
    */
   async certifyNewUser(opts, password) {
     try {
-      const smsCertifyMethodAbi = getSmsCertifierMethodAbi('certify', 1);
-      const smsCertifyCallEncoded = web3Abi.encodeFunctionCall(smsCertifyMethodAbi, [add0x(opts.user)]);
+      const methodArgs = [add0x(opts.user)];
+      const smsCertifyMethodAbi = getSmsCertifierMethodAbi('certify', methodArgs.length);
+      const smsCertifyCallEncoded = web3Abi.encodeFunctionCall(smsCertifyMethodAbi, methodArgs);
       const txData = {
         from: this.address,
         to: SmsCertifier[this.networkId].address,
@@ -445,8 +452,9 @@ class DetherWeb3User {
    */
   async revokeUser(opts, password) {
     try {
-      const smsRevokeMethodAbi = getSmsCertifierMethodAbi('revoke', 1);
-      const smsRevokeCallEncoded = web3Abi.encodeFunctionCall(smsRevokeMethodAbi, [add0x(opts.user)]);
+      const methodArgs = [add0x(opts.user)];
+      const smsRevokeMethodAbi = getSmsCertifierMethodAbi('revoke', methodArgs.length);
+      const smsRevokeCallEncoded = web3Abi.encodeFunctionCall(smsRevokeMethodAbi, methodArgs);
       const txData = {
         from: this.address,
         to: SmsCertifier[this.networkId].address,
