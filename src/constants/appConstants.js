@@ -42,6 +42,8 @@ export const TICKER = {
     HAV: '0xc011a72400e58ecd99ee497cf89e3775d4bd732f',
     NUSD: '0x57ab1e02fee23774580c119740129eac7081e9d3',
     ZLA: '0xfd8971d5e8e1740ce2d0a84095fca4de729d0c16',
+    PNK: '0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d',
+    FLIXX: '0xf04a8ac553fcedb5ba99a64799155826c136b0be',
     ETH: '0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2', // WETH
   },
 };
@@ -56,6 +58,11 @@ export const ALLOWED_EXCHANGE_PAIRS = [
   'ETH-VEN',
   'ETH-AE',
   'ETH-REP',
+  'ETH-HAV',
+  'ETH-NUSD',
+  'ETH-ZLA',
+  'ETH-PNK',
+  'ETH-FLIXX',
 ];
 
 export const NETWORK_NAME_ID = {

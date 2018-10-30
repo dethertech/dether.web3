@@ -269,13 +269,12 @@ async getAllBalance(address, ticker) {
 
   tokenBalancePromises.push(dthBalancePromise, ethBalancePromise);
   const weiBalances = await Promise.all(tokenBalancePromises.map(p => p.catch(e => e))); // continue if error
-
-  const balances = weiBalances.map(formatBalance);
   tokens.push('DTH', 'ETH');
 
   // {token[0]: balance[0], token[1]: balance[1]...}
-  const result = balances.reduce((acc, bal, index) => {
-    if (isNumDec(bal)) { // if bal is not error  // https://github.com/ethereum/web3.js/issues/1089
+  const result = weiBalances.reduce((acc, weiBal, index) => {
+    if (isNumDec(weiBal)) { // if bal is not error  // https://github.com/ethereum/web3.js/issues/1089
+    const bal = formatBalance(weiBal);
     acc[tokens[index].toString()] = bal;
     } else {
       console.log(`error result from balanceOf() token: ${tokens[index]}. Not including in results object`);
