@@ -40,7 +40,7 @@ class DetherWeb3 {
 
   init() {
     try {
-      this._provider = window.web3 && window.web3.currentProvider;
+      this._provider = window.ethereum ? window.ethereum : (window.web3 && window.web3.currentProvider);
 
       if (typeof this._provider === 'undefined') throw new Error('Invalid provider');
 
@@ -49,7 +49,7 @@ class DetherWeb3 {
       if (typeof this._web3js === 'undefined') throw new Error('Invalid web3js instance');
 
       // this._address = await getAddress(this._web3js) || null;
-      this._address = window.web3.eth.defaultAccount; // synchronous
+      this._address = window.ethereum ? '0x' : window.web3.eth.defaultAccount; // synchronous
       if (this._address) {
         this._address = this._address.toLowerCase();
       }
@@ -89,6 +89,22 @@ class DetherWeb3 {
       && !!this._detherContract
       && !!this._detherContract._address
     );
+  }
+
+  getAddress() {
+    return new Promise(async (res, rej) => {
+      try {
+        this._web3js.eth.getAccounts()
+          .then((accounts, error) => {
+            if (!error) {
+              return res(accounts[0]);
+            }
+            return rej(new TypeError(`Failed to get accounts: ${error.message}`));
+          });
+      } catch (e) {
+        rej(new Error(e));
+      }
+    });
   }
 
   /**
