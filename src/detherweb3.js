@@ -107,6 +107,11 @@ class DetherWeb3 {
     });
   }
 
+  async getNetworkId() {
+    const netId = await this._web3js.eth.net.getId();
+    return netId;
+  }
+
   /**
    * Get instance of DetherUser linked to this Dether instance
    * @param  {object}  encryptedWallet Encrypted user wallet
