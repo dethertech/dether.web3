@@ -4,17 +4,15 @@ import { expect } from 'chai';
 // import sinon from 'sinon';
 import Chaithereum from 'chaithereum';
 
-import DetherWeb3 from '../../src';
+import detherWeb3 from '../../src';
 
 const chaithereum = new Chaithereum();
 
 describe('dether web3', () => {
   describe('instanciation', () => {
-    let detherWeb3;
-
     it('should throw a web3 error', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        await detherWeb3.init();
       } catch (e) {
         expect(e).to.not.equal(null);
       }
@@ -26,7 +24,7 @@ describe('dether web3', () => {
 
     it('should throw a provider error', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        await detherWeb3.init();
       } catch (e) {
         expect(e).to.not.equal(null);
       }
@@ -38,32 +36,32 @@ describe('dether web3', () => {
 
     it('should instancite web3js', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        await detherWeb3.init();
         expect(detherWeb3).to.not.equal(null);
       } catch (e) {
         expect(e).to.equal(null);
       }
     });
-
 
     it('should instancite with loadContract', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
-        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.address)).to.be.true;
-        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.smsContract._address)).to.be.true;
-        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.dthContract._address)).to.be.true;
-        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3.detherContract._address)).to.be.true;
-        expect(detherWeb3.networkId).to.equal('42');
+        await detherWeb3.init();
+
         expect(detherWeb3).to.not.equal(null);
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3._address)).to.be.true;
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3._smsContract._address)).to.be.true;
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3._dthContract._address)).to.be.true;
+        expect(/^0x[a-fA-F0-9]{40}$/.test(detherWeb3._detherContract._address)).to.be.true;
+        expect(detherWeb3._networkId).to.equal('42');
       } catch (e) {
         expect(e).to.equal(null);
       }
     });
 
-// Getters
+    // Getters
      it('should call all getters', async () => {
       try {
-        detherWeb3 = await new DetherWeb3();
+        await detherWeb3.init();
 
         const address = await detherWeb3.ethAddress;
         expect(/^0x[a-fA-F0-9]{40}$/.test(address)).to.be.true;
@@ -79,6 +77,13 @@ describe('dether web3', () => {
       } catch (e) {
         expect(e).to.equal(null);
       }
+    });
+  });
+
+  describe('is Ready', () => {
+    it('should be ready', async () => {
+      await detherWeb3.init();
+      expect(detherWeb3.isReady()).to.equal(true);
     });
   });
 });

@@ -1,5 +1,71 @@
 # dether.web3
 
+## Run example
+
+* Google Chrome
+* Metamask
+
+TODO
+* Check if the user is logged
+
+Build the package
+```
+yarn build
+```
+
+Creage new React app
+```
+cd examples
+npx create-react-app test
+cd ..
+```
+
+Copy lib directory to node_modules
+```
+mv lib detherweb3
+mv detherweb3 examples/test/node_modules
+```
+
+Copy package json
+```
+cp package.json examples/test/node_modules/detherweb3
+cd examples/test/node_modules/detherweb3
+yarn
+cd ../../../
+```
+
+Copy example.js to src
+```
+cp example.js test/src
+```
+
+Remove everything in src/index.js and paste this code
+```
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import registerServiceWorker from './registerServiceWorker';
+
+import './example';
+
+ReactDOM.render(<App />, document.getElementById('root'));
+registerServiceWorker();
+
+```
+
+Run the app and watch the console on the browser
+```
+cd test/
+yarn start
+```
+
+Update the Build
+```
+yarn build
+cp -r lib/* examples/test/node_modules/detherweb3/
+```
+
 ## Usage
 
 #### Instanciate
@@ -7,7 +73,8 @@
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 } catch (e) {
   console.log(e)
 }
@@ -20,7 +87,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const balances = await detherWeb3.getBalance();
 
@@ -35,7 +103,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const isSmsReg = await detherWeb3.isSmsReg();
 
@@ -50,7 +119,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const zoneId = 'GI'
 
@@ -67,7 +137,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const hash = '' // ethereum transaction hash
 
@@ -84,7 +155,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const zoneId = 'GI'
 
@@ -101,7 +173,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const shop = await detherWeb3.getShop();
 
@@ -116,7 +189,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const hash = await detherWeb3.deleteShop();
 
@@ -131,7 +205,8 @@ try {
 import DetherWeb3 from 'detherweb3';
 
 try {
-  const detherWeb3 = await new DetherWeb3();
+  const detherWeb3 = new DetherWeb3();
+  await detherWeb3.init()
 
   const data = {
     lat: 1.23,
@@ -174,6 +249,10 @@ const isWeb3 = detherWeb3.isWeb3;
 const isConnected = detherWeb3.isConnected;
 ```
 
+### Is initialized
+```js
+const isInit = detherWeb3.isInit;
+```
 
 ## TODO
 

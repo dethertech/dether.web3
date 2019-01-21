@@ -11,9 +11,7 @@ const shopFromContract = (rawShop, web3js) =>
     try {
       if (!rawShop || !web3js) return rej(new Error('Invalid args'));
 
-      await validateShop(rawShop);
-
-      return res({
+      const newShop = {
         lat: parseFloat(rawShop.lat) / 100000,
         lng: parseFloat(rawShop.lng) / 100000,
         countryId: web3js.utils.hexToUtf8(rawShop.countryId).replace(/\0/g, ''),
@@ -22,7 +20,11 @@ const shopFromContract = (rawShop, web3js) =>
         name: web3js.utils.hexToUtf8(rawShop.name).replace(/\0/g, ''),
         description: web3js.utils.hexToUtf8(rawShop.description).replace(/\0/g, ''),
         opening: web3js.utils.hexToUtf8(rawShop.opening).replace(/\0/g, ''),
-      });
+      };
+
+      await validateShop(newShop);
+
+      return res(newShop);
     } catch (e) {
       return rej(new Error(`Invalid shop profile: ${e.message}`));
     }

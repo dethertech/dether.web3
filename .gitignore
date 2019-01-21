@@ -12,7 +12,8 @@ analysis.html
 /config
 src/**/*.css
 src/**/_snapshots_
-
+examples/test
+detherweb3
 
 # misc
 .DS_Store

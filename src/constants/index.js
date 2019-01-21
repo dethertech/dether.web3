@@ -1,2 +1,3 @@
 export { default as validateShop } from './validateShop';
-export { default as overloadedTransferAbi } from './overloadedTransferAbi';
+export { default as validateTeller } from './validateTeller';
+
