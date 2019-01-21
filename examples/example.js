@@ -24,14 +24,27 @@ const getInfo = async () => {
     const isSmsReg = await detherWeb3.isSmsReg();
     console.log(`isSmsReg: ${isSmsReg}`);
 
-    const zoneId = 'FR';
-    const zonePrice = await detherWeb3.getZonePrice(zoneId);
+    const zoneId = 'GI';
+    const zonePrice = await detherWeb3.getTellerZonePrice(zoneId);
     console.log(`zonePrice: ${zonePrice}`);
 
-    const open = await detherWeb3.isZoneOpen(zoneId);
+    const open = await detherWeb3.isTellerZoneOpen(zoneId);
     console.log(`open: ${open}`);
 
-    const data = {
+    const tellerData = {
+      lat: '48.86747',
+      lng: '2.34092',
+      countryId: 'GI',
+      postalCode: '75009',
+      avatarId: '06',
+      currencyId: '2',
+      messenger: 'teller3',
+      rates: 30,
+      buyer: true,
+      buyRates: 10,
+    };
+
+    const shopData = {
       lat: 1.23,
       lng: 12.324,
       countryId: 'FR',
@@ -42,32 +55,18 @@ const getInfo = async () => {
       opening: '0000000',
     };
 
-
-    const hash = await detherWeb3.addShop(data);
-    console.log(`hash add: ${hash.transactionHash}`);
-
-    setTimeout(async () => {
-      const transactionStatus = await detherWeb3.getTransactionStatus(hash.transactionHash);
-      console.log(`Transaction status: ${transactionStatus}`);
-
-      setTimeout(async () => {
-        try {
-          const shop = await detherWeb3.getShop();
-          console.log(`Get shop: ${shop}`);
-
-          setTimeout(async () => {
-            try {
-              const hashDelete = await detherWeb3.deleteShop();
-              console.log(`Delete shop: ${hashDelete.transactionHash}`);
-            } catch (e) {
-              console.log(e);
-            }
-          }, 15000);
+    try {
+          await detherWeb3.addTeller(tellerData);
+          console.log('Teller added');
+          await detherWeb3.addShop(shopData);
+          console.log('Shop added');
+          const hashDelete = await detherWeb3.deleteTeller();
+          console.log(`Delete teller: ${hashDelete.transactionHash}`);
+          const hashDeleteShop = await detherWeb3.deleteShop();
+          console.log(`Delete shop: ${hashDeleteShop.transactionHash}`);
         } catch (e) {
           console.log(e);
         }
-      }, 15000);
-    }, 10000);
   } catch (e) {
     console.log(e);
   }
