@@ -3,7 +3,7 @@
 import Web3 from 'web3';
 import web3Abi from 'web3-eth-abi';
 import { TICKER, EXCHANGE_CONTRACTS, ALLOWED_EXCHANGE_PAIRS, NETWORK_NAME_ID } from './constants/appConstants';
-import { getDthContract, getErc20Contract, getSmsContract } from './contracts';
+import { getErc20Contract } from './contracts';
 import { add0x, getMaxUint256Value } from './utils/eth';
 import DthContract from 'dethercontract/contracts/DetherToken.json';
 import DetherCore from 'dethercontract/contracts/DetherCore.json';
