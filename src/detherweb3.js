@@ -3,7 +3,7 @@ import Web3 from 'web3';
 import DetherWeb3User from './detherWeb3User';
 import BigNumber from './utils/BigNumber';
 import { add0x, isEmptyObj, addEthersDec, isAddr, isNumDec, getMaxUint256Value } from './utils/eth';
-import { TICKER, ALLOWED_EXCHANGE_PAIRS, EXCHANGE_CONTRACTS } from './constants/appConstants';
+import { TICKER, ALLOWED_EXCHANGE_PAIRS, EXCHANGE_CONTRACTS, EXAMPLE } from './constants/appConstants';
 import { getRateEstimation } from './utils/exchangeTokens';
 
 import {
@@ -38,22 +38,26 @@ class DetherWeb3 {
     this.init();
   }
 
+
   init() {
     try {
-      this._provider = window.ethereum ? window.ethereum : (window.web3 && window.web3.currentProvider);
+      if (typeof window !== 'undefined') {
+        this._provider = window.ethereum ? window.ethereum : (window.web3 && window.web3.currentProvider);
+        if (typeof this._provider === 'undefined') throw new Error('Invalid provider');
 
-      if (typeof this._provider === 'undefined') throw new Error('Invalid provider');
+        this._address = window.ethereum ? '0x' : window.web3.eth.defaultAccount; // synchronous
+        if (this._address) {
+          this._address = this._address.toLowerCase();
+        }
+      } else {
+        // no browser window web3: use example provider and address
+        this._provider = EXAMPLE.provider;
+        this._address = EXAMPLE.address;
+      }
 
       this._web3js = new Web3(this._provider);
 
       if (typeof this._web3js === 'undefined') throw new Error('Invalid web3js instance');
-
-      // this._address = await getAddress(this._web3js) || null;
-      this._address = window.ethereum ? '0x' : window.web3.eth.defaultAccount; // synchronous
-      if (this._address) {
-        this._address = this._address.toLowerCase();
-      }
-      // this._networkId = await this._web3js.eth.net.getId();
 
       this._smsContract = getSmsContract(this._web3js, this._networkId);
       this._dthContract = getDthContract(this._web3js, this._networkId);
@@ -129,7 +133,7 @@ class DetherWeb3 {
    * getBalance return eth and dth balances from eth address
    * @return {object} eth & dth balances
    */
-  getBalance(address) {
+  getBalance(address = this._address) {
     return new Promise(async (res, rej) => {
       try {
         this._web3js.eth.getBalance(address)

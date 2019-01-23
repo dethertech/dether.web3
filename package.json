@@ -5,7 +5,8 @@
   "main": "lib/index.js",
   "scripts": {
     "babel-node": "babel-node",
-    "example": "npm run babel-node -- examples/usage.js",
+    "example1": "npm run babel-node -- examples/getInfoFromZone.js",
+    "example2": "npm run babel-node -- examples/getInfoNetworkAccount.js",
     "test": "mocha --require babel-core/register test/test.config.js test/**/*.test.js test/specs/**/*.test.js --timeout 15000",
     "prepublish": "babel src --out-dir lib",
     "build": "babel src --out-dir lib",
