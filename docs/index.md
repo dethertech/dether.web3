@@ -2,7 +2,6 @@
 
 [API documentation](https://dethertech.github.io/dether.web3)
 
-[Examples](https://github.com/dethertech/dether.js/blob/v1.x/examples/usage.js)
 
 # DetherWeb3
 
