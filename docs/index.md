@@ -2,7 +2,6 @@
 
 [API documentation](https://dethertech.github.io/dether.web3)
 
-
 # DetherWeb3
 
 DetherWeb3 is Javascript SDK to easily interact with [DetherContracts](https://github.com/dethertech/detherContracts) through an injected web3
@@ -14,17 +13,8 @@ It provides wrappers for all the public methods of the contract and formats valu
 - [Install](#install)
 - [Usage](#usage)
 - [Instanciate](##Instanciate_dether)
-- [Get teller](#Get_Teller)
-- [Get all teller](#Get_all_tellers)
+- [Get teller or shop](#Get_Teller_Or_Shop)
 - [Get teller in zone](#Get_Tellers_In_Zone)
-- [Get Teller Balance](#Get_Teller_Balance)
-- [Instanciate User](#Instanciate_User)
-- [Add Sell Point](#Add_Sell_Point)
-- [Add_Eth](#Add_Eth)
-- [Delete Sell Point](#Delete_Sell_Point)
-- [Send To Buyer](#Send_To_Buyer)
-- [certify new user](#certify_new_user)
-- [certify new user API CALL](#certify_new_user_API_CALL)
 
 ## Install
 
