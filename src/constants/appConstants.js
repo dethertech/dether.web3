@@ -103,3 +103,8 @@ export const EXCHANGE_CONTRACTS = {
     airswapExchange: '0x8fd3121013a07c57f0d69646e86e7a4880b467b7',
   },
 };
+
+export const EXAMPLE = {
+  provider: 'https://mainnet.infura.io/',
+  address: '0xeAdc7125A1485e0b084e1d54CaB52FdA791F786D',
+};
